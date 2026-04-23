@@ -10,13 +10,13 @@ const Toast = () => {
     <AnimatePresence>
       {toast && (
         <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-[#2D5A27] text-white px-6 py-4 rounded-[2rem] shadow-2xl flex items-center gap-3 border border-white/20 whitespace-nowrap"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 10 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] bg-[#2D5A27] text-[#FEFAE0] px-6 py-2.5 rounded-full shadow-xl flex items-center gap-2 whitespace-nowrap"
         >
-          <CheckCircle className="w-5 h-5 text-[#A3B18A]" />
-          <span className="font-bold">{toast}</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em]">{toast}</span>
         </motion.div>
       )}
     </AnimatePresence>
