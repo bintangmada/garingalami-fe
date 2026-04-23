@@ -4,44 +4,53 @@ import { useCart } from '../context/CartContext';
 
 const Navbar = ({ onOpenCart, searchTerm, onSearch }) => {
   const { totalItems } = useCart();
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass px-6 py-5 flex justify-between items-center premium-shadow">
-      <div className="flex items-center space-x-3 shrink-0">
-        <div className="w-10 h-10 bg-[#2D5A27] rounded-2xl flex items-center justify-center text-[#FEFAE0] shadow-lg shadow-[#2D5A27]/20">
-          <Leaf className="w-6 h-6" />
+    <nav className="fixed top-0 left-0 right-0 z-50 glass px-6 md:px-12 py-6 md:py-8 flex justify-between items-center md:items-start">
+      <div className="flex flex-col space-y-1 shrink-0 group relative cursor-help">
+        {/* Elegant About Tooltip with Emblem */}
+        <div className="absolute top-full left-0 mt-6 w-80 bg-white/95 backdrop-blur-sm p-10 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-1000 ease-out transform -translate-y-2 group-hover:translate-y-0 z-[60] border border-[#2D5A27]/5">
+          <Leaf className="w-6 h-6 text-[#2D5A27] stroke-[1px] mb-8 opacity-30" />
+          <p className="text-[11px] leading-loose tracking-wide text-[#2D5A27]/60 italic font-medium">
+            "At Garing Alami, we translate nature's finest gifts into a curated culinary experience. Each fruit is hand-selected and slowly preserved to honor its original vibration and essence."
+          </p>
         </div>
-        <div className="flex flex-col -space-y-1 hidden sm:flex">
-          <span className="text-2xl font-black tracking-tight text-[#2D5A27]">Garing<span className="text-[#A3B18A]">Alami</span></span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A3B18A] ml-0.5">Premium Natural Snacks</span>
+        <div className="flex flex-col">
+          <span className="text-sm font-black uppercase tracking-[0.4em] text-[#2D5A27]">Garing Alami</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#2D5A27]/40">Dried Fruit Atelier</span>
         </div>
       </div>
 
-      <div className="flex-1 max-w-md mx-6 hidden md:block">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2D5A27]/50" />
-          <input 
-            type="text" 
-            placeholder="Search natural goodness..."
-            className="w-full bg-[#E9EDC9]/30 border border-[#2D5A27]/5 p-3 pl-12 rounded-2xl outline-none focus:ring-2 ring-[#2D5A27]/10 transition-all font-medium text-[#2D5A27]"
-            value={searchTerm}
-            onChange={(e) => onSearch(e.target.value)}
-          />
+      <div className="flex items-center gap-6 md:gap-12">
+        {/* Responsive Search */}
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            className="text-[#2D5A27]/40 hover:text-[#2D5A27] transition-colors md:hidden"
+          >
+            <Search size={18} strokeWidth={1.5} />
+          </button>
+          
+          <div className={`${isSearchOpen ? 'w-40 opacity-100' : 'w-0 md:w-40 opacity-0 md:opacity-100'} overflow-hidden transition-all duration-700 ease-in-out`}>
+            <input 
+              type="text" 
+              placeholder="SEARCH"
+              className="w-full bg-transparent py-1 text-[11px] uppercase font-bold tracking-[0.3em] outline-none border-b border-[#2D5A27]/10 focus:border-[#2D5A27]/30 transition-all text-[#2D5A27] placeholder:text-[#2D5A27]/30"
+              value={searchTerm}
+              onChange={(e) => onSearch(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
-      
-      <div className="flex items-center space-x-2 shrink-0">
-        <button 
-          onClick={onOpenCart}
-          className="relative p-3 bg-white/50 hover:bg-[#E9EDC9] rounded-2xl transition-all hover:scale-105 active:scale-95 group"
-        >
-          <ShoppingBag className="w-6 h-6 text-[#2D5A27] transition-transform group-hover:-rotate-6" />
-          {totalItems > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-6 h-6 flex items-center justify-center rounded-full border-2 border-white font-black shadow-lg">
-              {totalItems}
-            </span>
-          )}
-        </button>
+        
+        <div className="shrink-0">
+          <button 
+            onClick={onOpenCart}
+            className="relative text-[#2D5A27]/60 hover:text-[#2D5A27] transition-all"
+          >
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] whitespace-nowrap">Cart {totalItems > 0 && `(${totalItems})`}</span>
+          </button>
+        </div>
       </div>
     </nav>
   );
