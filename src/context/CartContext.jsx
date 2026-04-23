@@ -6,8 +6,13 @@ export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(() => {
-    const saved = localStorage.getItem('garing_cart');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('garing_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Cart hydration error", e);
+      return [];
+    }
   });
 
   const [toast, setToast] = useState(null);
@@ -29,7 +34,7 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
-    showToast(`${product.name} added to cart!`);
+    showToast(`${product.name.toUpperCase()} ADDED TO COLLECTION!`);
   };
 
   const removeFromCart = (id) => {

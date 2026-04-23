@@ -5,9 +5,10 @@ import { useCart } from '../context/CartContext';
 import ConfirmDialog from './ConfirmDialog';
 
 const CartDrawer = ({ isOpen, onClose }) => {
-  const { cart, removeFromCart, updateQuantity, totalPrice, showToast } = useCart();
+  const { cart, totalItems, totalPrice, removeFromCart, updateQuantity, clearCart, showToast } = useCart();
   const [userInfo, setUserInfo] = useState({ name: '', address: '' });
   const [confirmItem, setConfirmItem] = useState(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [step, setStep] = useState('cart'); // cart, shipping, payment
   const [paymentMethod, setPaymentMethod] = useState('');
 
@@ -35,8 +36,16 @@ const CartDrawer = ({ isOpen, onClose }) => {
        if (cart.length === 0) return;
        setStep('shipping');
      } else if (step === 'shipping') {
-       if (!userInfo.name || !userInfo.address) {
+       if (!userInfo.name && !userInfo.address) {
          showToast("Lengkapi nama & alamat");
+         return;
+       }
+       if (!userInfo.name) {
+         showToast("Lengkapi nama");
+         return;
+       }
+       if (!userInfo.address) {
+         showToast("Lengkapi alamat");
          return;
        }
        setStep('payment');
@@ -78,28 +87,96 @@ const CartDrawer = ({ isOpen, onClose }) => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-sm bg-white h-full shadow-2xl flex flex-col p-8 overflow-hidden"
+            className="relative w-full max-w-[480px] bg-white h-full shadow-2xl flex flex-col p-12 overflow-hidden"
           >
-             <div className="flex justify-between items-center mb-12">
-               <div className="flex items-center gap-4">
-                 {step !== 'cart' && (
-                   <button onClick={handleBack} className="p-2 -ml-2 text-[#2D5A27]/40 hover:text-[#2D5A27] transition-colors">
-                     <ArrowLeft size={16} />
-                   </button>
-                 )}
-                 <h2 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#2D5A27]">
-                   {step === 'cart' ? 'Cart' : step === 'shipping' ? 'Shipping' : 'Payment'}
-                 </h2>
-               </div>
-               <button onClick={onClose} className="p-2 hover:bg-[#FEFAE0] rounded-full transition-colors">
-                 <X className="w-4 h-4 text-[#2D5A27]" />
-               </button>
-             </div>
+              <div className="flex flex-col items-center mb-16 relative">
+                {/* Global Close - Top Right */}
+                <button 
+                  onClick={onClose} 
+                  className="absolute top-8 right-8 p-2 text-[#2D5A27]/40 hover:text-[#2D5A27] hover:bg-[#2D5A27]/5 rounded-full transition-all duration-300"
+                >
+                  <X size={16} strokeWidth={1.5} />
+                </button>
 
-            <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
+                {/* Compact Navigation Control */}
+                <div className="flex items-center justify-center gap-6 py-2 px-8 bg-[#2D5A27]/[0.02] rounded-full border border-[#2D5A27]/5">
+                  <button 
+                    onClick={handleBack} 
+                    disabled={step === 'cart'}
+                    className={`transition-all ${step === 'cart' ? 'opacity-0 pointer-events-none' : 'text-[#2D5A27]/40 hover:text-[#2D5A27]'}`}
+                  >
+                    <ArrowLeft size={14} strokeWidth={3} />
+                  </button>
+
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-[#2D5A27] min-w-[80px] text-center">
+                    {step === 'cart' ? 'Cart' : step === 'shipping' ? 'Shipping' : 'Payment'}
+                  </h2>
+
+                  <button 
+                    onClick={handleCheckout}
+                    disabled={step === 'payment' || cart.length === 0}
+                    className={`transition-all ${(step === 'payment' || cart.length === 0) ? 'opacity-0 pointer-events-none' : 'text-[#2D5A27]/40 hover:text-[#2D5A27]'}`}
+                  >
+                    <motion.div animate={{ x: [0, 2, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                    </motion.div>
+                  </button>
+                </div>
+              </div>
+
+            {step === 'cart' && cart.length > 0 && (
+              <div className="flex justify-end mb-6">
+                <button 
+                  onClick={() => setShowClearConfirm(true)}
+                  className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] text-red-400/40 hover:text-red-400 transition-all group"
+                >
+                  <Trash2 className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                  Clear Collection
+                </button>
+              </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto no-scrollbar space-y-8 pr-2">
                {cart.length === 0 ? (
-                 <div className="text-center py-32 opacity-20">
-                   <p className="text-[10px] uppercase font-bold tracking-widest">Your cart is empty</p>
+                 <div className="flex-1 flex flex-col items-center justify-center text-center py-10 space-y-12">
+                   <div className="space-y-6">
+                     <div className="flex justify-center opacity-20">
+                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                         <path d="M12 2L4.5 20.29C4.12 21.21 4.96 22 5.88 22H18.12C19.04 22 19.88 21.21 19.5 20.29L12 2Z" stroke="#2D5A27" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                         <path d="M12 10V18" stroke="#2D5A27" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                       </svg>
+                     </div>
+                     <div className="space-y-2">
+                       <h4 className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#2D5A27]/40">Atelier Inquiries</h4>
+                       <h3 className="text-xl font-black uppercase tracking-[0.2em] text-[#2D5A27]">Get In Touch</h3>
+                     </div>
+                   </div>
+
+                   <p className="text-[11px] font-medium text-[#2D5A27]/60 leading-relaxed max-w-[280px]">
+                     Whether you are inquiring about a custom collection, wholesale opportunities, or simply wish to share your experience, our concierge is here to assist you.
+                   </p>
+
+                   <div className="space-y-8 pt-4">
+                     <div className="space-y-1">
+                       <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#2D5A27]/30">Email</p>
+                       <p className="text-[10px] font-bold text-[#2D5A27]">atelier@garingalami.com</p>
+                     </div>
+                     <div className="space-y-1">
+                       <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#2D5A27]/30">Instagram</p>
+                       <p className="text-[10px] font-bold text-[#2D5A27]">@garingalami.official</p>
+                     </div>
+                     <div className="space-y-1">
+                       <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#2D5A27]/30">WhatsApp</p>
+                       <p className="text-[10px] font-bold text-[#2D5A27]">+62 812 3456 7890</p>
+                     </div>
+                   </div>
+
+                   <button 
+                    onClick={onClose}
+                    className="text-[9px] font-black uppercase tracking-[0.5em] text-[#2D5A27]/60 hover:text-[#2D5A27] pt-12 transition-colors border-t border-[#2D5A27]/5 w-full"
+                   >
+                     Back to Collection
+                   </button>
                  </div>
                ) : (
                  <div className="space-y-12">
@@ -126,7 +203,15 @@ const CartDrawer = ({ isOpen, onClose }) => {
                              <p className="text-[10px] font-medium text-[#2D5A27]/60 mb-3">Rp {item.price.toLocaleString('id-ID')}</p>
                              <div className="flex items-center gap-4">
                                <div className="flex items-center gap-3">
-                                 <button onClick={() => updateQuantity(item.id, -1)} className="text-[#2D5A27]/40 hover:text-[#2D5A27] p-1"><Minus className="w-3 h-3" /></button>
+                                 <button 
+                                   onClick={() => {
+                                     if (item.quantity === 1) handleRemove(item);
+                                     else updateQuantity(item.id, -1);
+                                   }} 
+                                   className={`p-1 transition-all ${item.quantity === 1 ? 'text-red-400/60 hover:text-red-400' : 'text-[#2D5A27]/40 hover:text-[#2D5A27]'}`}
+                                 >
+                                   {item.quantity === 1 ? <Trash2 className="w-3.5 h-3.5" /> : <Minus className="w-3 h-3" />}
+                                 </button>
                                  <span className="text-[10px] font-bold w-4 text-center">{item.quantity}</span>
                                  <button onClick={() => updateQuantity(item.id, 1)} className="text-[#2D5A27]/40 hover:text-[#2D5A27] p-1"><Plus className="w-3 h-3" /></button>
                                </div>
@@ -216,16 +301,29 @@ const CartDrawer = ({ isOpen, onClose }) => {
                >
                  {step === 'cart' ? 'Proceed to Shipping' : step === 'shipping' ? 'Proceed to Payment' : 'Complete Acquisition'}
                </button>
-            </div>
-          </motion.div>
+             </div>
+           </motion.div>
+ 
+           <ConfirmDialog 
+             isOpen={!!confirmItem}
+             type="drawer"
+             message={`Hapus ${confirmItem?.name} dari keranjang?`}
+             onConfirm={executeRemove}
+             onCancel={() => setConfirmItem(null)}
+           />
 
-          <ConfirmDialog 
-            isOpen={!!confirmItem}
-            message={`Hapus ${confirmItem?.name} dari keranjang?`}
-            onConfirm={executeRemove}
-            onCancel={() => setConfirmItem(null)}
-          />
-        </div>
+           <ConfirmDialog 
+             isOpen={showClearConfirm}
+             type="drawer"
+             message="Hapus semua barang dari koleksi?"
+             onConfirm={() => {
+               clearCart();
+               showToast("COLLECTION CLEARED");
+               setShowClearConfirm(false);
+             }}
+             onCancel={() => setShowClearConfirm(false)}
+           />
+         </div>
       )}
     </AnimatePresence>
   );
