@@ -1,7 +1,13 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel }) => {
+const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, type = 'fixed' }) => {
+  const getContainerClass = () => {
+    if (type === 'drawer') return 'fixed inset-y-0 right-0 w-full max-w-sm';
+    if (type === 'relative') return 'absolute inset-0 z-[50]';
+    return 'fixed inset-0';
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -11,31 +17,32 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onCancel}
-            className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="relative bg-white p-8 rounded-xl shadow-2xl max-w-xs w-full text-center space-y-6"
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="relative bg-white w-full max-w-[280px] p-8 rounded-[24px] shadow-2xl space-y-6 text-center"
           >
             <div className="space-y-2">
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#2D5A27]">Confirmation</h3>
-              <p className="text-xs text-[#344E41]/60 font-medium leading-relaxed">{message}</p>
+              <h3 className="text-[9px] font-black uppercase tracking-[0.4em] text-[#2D5A27]">Confirmation</h3>
+              <p className="text-[11px] text-[#344E41]/60 font-medium leading-relaxed">{message}</p>
             </div>
-            <div className="flex gap-3">
+            
+            <div className="flex gap-2">
               <button 
                 onClick={onCancel}
-                className="flex-1 py-3 text-[9px] font-bold uppercase tracking-widest text-[#2D5A27]/40 hover:text-[#2D5A27] transition-colors"
+                className="flex-1 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-[#2D5A27]/40 hover:text-[#2D5A27] transition-all"
               >
                 Cancel
               </button>
               <button 
                 onClick={onConfirm}
-                className="flex-1 py-3 bg-[#2D5A27] text-[#FEFAE0] rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#344E41] transition-all"
+                className="flex-1 py-3 bg-[#2D5A27] text-[#FEFAE0] rounded-xl text-[9px] font-black uppercase tracking-[0.2em] shadow-lg shadow-[#2D5A27]/20 transition-all active:scale-95"
               >
-                Remove
+                Confirm
               </button>
             </div>
           </motion.div>
