@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import InfoModal from '../components/InfoModal';
+import AboutSection from '../components/AboutSection';
+import BossRoom from '../views/BossRoom';
 import products from '../data/products.json';
 
 const Home = () => {
@@ -12,6 +14,7 @@ const Home = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [infoModal, setInfoModal] = useState({ isOpen: false, type: '' });
+  const [isBossRoomOpen, setIsBossRoomOpen] = useState(false);
 
   const categories = ['Classic', 'Exotic', 'Crunchy', 'Wellness'];
 
@@ -44,6 +47,7 @@ const Home = () => {
         onOpenCart={() => setIsCartOpen(true)} 
         searchTerm={searchTerm}
         onSearch={setSearchTerm}
+        onTriggerAdmin={() => setIsBossRoomOpen(true)}
       />
       
       <main className="pt-24 md:pt-32 pb-20 max-w-7xl mx-auto overflow-x-hidden">
@@ -91,19 +95,43 @@ const Home = () => {
         </section>
         
         {/* Luxury Product Grid */}
-        <section className="px-6 md:px-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24 items-start">
-            {filteredProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
-          </div>
-          
-          {filteredProducts.length === 0 && (
-            <div className="py-40 text-center opacity-20">
-              <p className="text-[10px] uppercase font-bold tracking-[0.5em]">No pieces found</p>
+        <section className="px-6 md:px-12 min-h-[40vh] flex flex-col">
+          {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24 items-start">
+              {filteredProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
             </div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 flex flex-col items-center justify-center text-center space-y-8 md:space-y-10 py-10"
+            >
+              <div className="w-40 h-40 md:w-56 md:h-56 opacity-20 grayscale hover:grayscale-0 hover:opacity-40 transition-all duration-[1.5s] ease-out">
+                <img 
+                  src="assets/empty-basket.png" 
+                  alt="Empty Basket" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="space-y-4">
+                <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-[0.6em] text-[#2D5A27]">Uncharted Territory</h3>
+                <p className="text-[10px] md:text-[11px] font-medium text-[#2D5A27]/40 tracking-[0.2em] max-w-[260px] md:max-w-[320px] leading-relaxed italic mx-auto">
+                  The requested piece is currently not in our collection. Let us guide you back to our curated selection.
+                </p>
+              </div>
+              <button 
+                onClick={() => { setSearchTerm(''); setSelectedCategories([]); }}
+                className="px-10 py-4 bg-[#2D5A27] text-white text-[10px] font-black uppercase tracking-[0.5em] hover:bg-[#344E41] hover:px-12 transition-all rounded-full shadow-2xl shadow-[#2D5A27]/10"
+              >
+                Reset Discovery
+              </button>
+            </motion.div>
           )}
         </section>
+
+        <AboutSection />
 
         {/* Minimalist Footer */}
         <footer className="mt-40 md:mt-60 pb-20 px-6 border-t border-[#2D5A27]/5 pt-20">
@@ -125,6 +153,18 @@ const Home = () => {
             type={infoModal.type} 
             onClose={() => setInfoModal({ ...infoModal, isOpen: false })} 
           />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isBossRoomOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100]"
+          >
+            <BossRoom onClose={() => setIsBossRoomOpen(false)} />
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
