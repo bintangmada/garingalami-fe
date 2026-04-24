@@ -73,7 +73,7 @@
   },
   {
     "id": 9,
-    "name": "Pure Apple Crisps",
+    "name": "Crunchy Apple Chips",
     "description": "Thin, crunchy slices of premium Gala apples with zero additives.",
     "price": 32000,
     "image": "assets/products/apple.png",
@@ -106,5 +106,14 @@
     "image": "assets/products/salak.png",
     "category": "Classic",
     "nutrition": "Ancient Energy Source"
+  },
+  {
+    "id": 13,
+    "name": "Artisan Dried Apple",
+    "description": "Soft, chewy premium apple slices, naturally sweet and fiber-rich.",
+    "price": 36000,
+    "image": "assets/products/apple_chewy.png",
+    "category": "Wellness",
+    "nutrition": "High in Pectin"
   }
 ]
