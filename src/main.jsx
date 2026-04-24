@@ -6,7 +6,7 @@ import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter basename="/garingalami-fe/">
+    <BrowserRouter basename={import.meta.env.DEV ? '/' : '/garingalami-fe/'}>
       <App />
     </BrowserRouter>
   </StrictMode>,
