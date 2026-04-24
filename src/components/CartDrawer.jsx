@@ -89,15 +89,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
             transition={{ type: 'tween', duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="relative w-full max-w-[480px] bg-white h-full shadow-2xl flex flex-col p-8 overflow-hidden"
           >
-              {/* Global Close - Top Right */}
-              <button 
-                onClick={onClose} 
-                className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-[#2D5A27]/30 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-500 z-50"
-              >
-                <X size={22} strokeWidth={1} />
-              </button>
-
-              <div className="relative w-full flex items-center justify-center mb-12 mt-4">
+              <div className="relative w-full flex items-center justify-center mb-12 mt-2">
                 {/* Compact Navigation Control */}
                 <div className="flex items-center justify-center gap-6 py-2 px-8 bg-[#2D5A27]/[0.02] rounded-full border border-[#2D5A27]/5">
                   <button 
@@ -122,6 +114,14 @@ const CartDrawer = ({ isOpen, onClose }) => {
                     </motion.div>
                   </button>
                 </div>
+
+                {/* Global Close - Perfectly Aligned */}
+                <button 
+                  onClick={onClose} 
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-[#2D5A27]/30 hover:text-red-500 transition-all duration-300"
+                >
+                  <X size={22} strokeWidth={1} />
+                </button>
               </div>
 
             {step === 'cart' && cart.length > 0 && (
