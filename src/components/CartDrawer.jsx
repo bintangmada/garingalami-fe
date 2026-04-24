@@ -11,6 +11,12 @@ const CartDrawer = ({ isOpen, onClose }) => {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [step, setStep] = useState('cart'); // cart, shipping, payment
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [localToast, setLocalToast] = useState(null);
+
+  const triggerLocalToast = (msg) => {
+    setLocalToast(msg);
+    setTimeout(() => setLocalToast(null), 2000);
+  };
 
   const fallbackImage = "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&q=80&w=800";
 
@@ -21,7 +27,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
   const executeRemove = () => {
     if (confirmItem) {
       removeFromCart(confirmItem.id);
-      showToast(`${confirmItem.name} dihapus`);
+      triggerLocalToast(`${confirmItem.name.toUpperCase()} REMOVED`);
       setConfirmItem(null);
     }
   };
@@ -304,6 +310,20 @@ const CartDrawer = ({ isOpen, onClose }) => {
                 </div>
              )}
 
+             <AnimatePresence>
+                {localToast && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute bottom-32 left-8 right-8 z-[150] bg-[#2D5A27] text-[#FEFAE0] py-4 px-6 rounded-xl shadow-2xl flex items-center gap-4 border border-[#FEFAE0]/10"
+                  >
+                    <div className="w-1 h-1 bg-[#FEFAE0] rounded-full animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] leading-none">{localToast}</span>
+                  </motion.div>
+                )}
+             </AnimatePresence>
+
              <ConfirmDialog 
                isOpen={!!confirmItem}
                type="drawer"
@@ -318,7 +338,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                message="Hapus semua barang dari koleksi?"
                onConfirm={() => {
                  clearCart();
-                 showToast("COLLECTION CLEARED");
+                 triggerLocalToast("COLLECTION CLEARED");
                  setShowClearConfirm(false);
                }}
                onCancel={() => setShowClearConfirm(false)}
