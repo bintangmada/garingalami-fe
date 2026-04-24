@@ -138,15 +138,15 @@ const CartDrawer = ({ isOpen, onClose }) => {
 
             {step === 'cart' && cart.length > 0 && (
               <div className="space-y-6 mb-8">
-                <div className="relative group">
+                <div className="relative group mb-2">
                   <input 
                     type="text"
                     placeholder="Search in your collection..."
                     value={cartSearch}
                     onChange={(e) => setCartSearch(e.target.value)}
-                    className="w-full bg-[#2D5A27]/[0.03] border-b border-[#2D5A27]/10 py-3 pl-2 pr-10 text-[10px] font-bold uppercase tracking-[0.2em] outline-none focus:border-[#2D5A27] focus:bg-[#2D5A27]/[0.05] transition-all text-[#2D5A27] placeholder:text-[#2D5A27]/20"
+                    className="w-full bg-transparent border-b border-[#2D5A27]/5 py-4 pl-0 pr-10 text-[9px] font-black uppercase tracking-[0.4em] outline-none focus:border-[#2D5A27]/20 transition-all text-[#2D5A27] placeholder:text-[#2D5A27]/10"
                   />
-                  <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2D5A27]/20 group-focus-within:text-[#2D5A27] transition-colors" />
+                  <Search size={12} className="absolute right-0 top-1/2 -translate-y-1/2 text-[#2D5A27]/10 group-focus-within:text-[#2D5A27]/30 transition-colors" />
                 </div>
                 
                 <div className="flex justify-end">
