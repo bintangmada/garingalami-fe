@@ -49,7 +49,12 @@ const ProductCard = ({ product, index }) => {
         className="group cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
-        <div className="relative aspect-square overflow-hidden bg-gray-50 mb-8 group/img rounded-2xl">
+        <div className="relative aspect-square overflow-hidden bg-gray-100 mb-8 group/img rounded-2xl">
+          {/* Skeleton Loader for Image */}
+          {!isLoaded && (
+            <div className="absolute inset-0 z-10 animate-pulse bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100" />
+          )}
+
           {/* Local Toast Overlay */}
           <AnimatePresence>
             {localToast && (
@@ -160,9 +165,19 @@ const ProductCard = ({ product, index }) => {
           />
         </div>
         <div className="flex flex-col items-center text-center space-y-3 px-4">
-          <span className="text-[9px] font-bold text-[#2D5A27]/30 uppercase tracking-[0.5em]">{product.category}</span>
-          <h3 className="text-[12px] font-bold text-[#2D5A27] uppercase tracking-[0.2em]">{product.name}</h3>
-          <p className="text-[11px] font-medium text-[#2D5A27]/60 tracking-widest italic">Rp {product.price.toLocaleString('id-ID')}</p>
+          {!isLoaded ? (
+            <>
+              <div className="h-2 w-20 bg-gray-100 animate-pulse rounded-full" />
+              <div className="h-3 w-40 bg-gray-100 animate-pulse rounded-full" />
+              <div className="h-2 w-24 bg-gray-100 animate-pulse rounded-full" />
+            </>
+          ) : (
+            <>
+              <span className="text-[9px] font-bold text-[#2D5A27]/30 uppercase tracking-[0.5em]">{product.category}</span>
+              <h3 className="text-[12px] font-bold text-[#2D5A27] uppercase tracking-[0.2em]">{product.name}</h3>
+              <p className="text-[11px] font-medium text-[#2D5A27]/60 tracking-widest italic">Rp {product.price.toLocaleString('id-ID')}</p>
+            </>
+          )}
         </div>
       </motion.div>
 
