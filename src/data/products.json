@@ -4,7 +4,7 @@
     "name": "Premium Dried Mango",
     "description": "Sweet, chewy, and 100% natural mango slices. No added sugar.",
     "price": 45000,
-    "image": "https://images.unsplash.com/photo-1591073113125-e46713c829ed?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/mango.png",
     "category": "Classic",
     "nutrition": "High in Vitamin A & C"
   },
@@ -13,7 +13,7 @@
     "name": "Golden Dried Pineapple",
     "description": "Tangy and sweet pineapple rings dried to perfection.",
     "price": 38000,
-    "image": "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/pineapple.png",
     "category": "Classic",
     "nutrition": "Contains Bromelain"
   },
@@ -22,7 +22,7 @@
     "name": "Crunchy Dragon Fruit",
     "description": "Vibrant red pitaya slices with a satisfying crunch.",
     "price": 52000,
-    "image": "https://images.unsplash.com/photo-1527324688102-d8a8b13d77d3?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/dragonfruit.png",
     "category": "Exotic",
     "nutrition": "High in Antioxidants"
   },
@@ -31,7 +31,7 @@
     "name": "Sweet Jackfruit Crisps",
     "description": "Indonesian Nangka processed with vacuum frying for ultimate crispness.",
     "price": 42000,
-    "image": "https://images.unsplash.com/photo-1582560475093-ba66accbc424?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/jackfruit.png",
     "category": "Crunchy",
     "nutrition": "Rich in Fiber"
   },
@@ -40,7 +40,7 @@
     "name": "Dried Papaya Spears",
     "description": "Nutrient-dense papaya slices, perfect for on-the-go snacking.",
     "price": 35000,
-    "image": "https://images.unsplash.com/photo-1621210185317-0805ff9ffdf4?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/papaya.png",
     "category": "Wellness",
     "nutrition": "Digestive Support"
   },
@@ -49,7 +49,7 @@
     "name": "Natural Banana Chips",
     "description": "Thinly sliced bananas, lightly crisped for a natural sweet treat.",
     "price": 30000,
-    "image": "https://images.unsplash.com/photo-1528821128474-27f9e7d0f2ec?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/banana.png",
     "category": "Crunchy",
     "nutrition": "Potassium Rich"
   },
@@ -58,7 +58,7 @@
     "name": "Zesty Dried Strawberry",
     "description": "Whole sun-dried strawberries with a perfect balance of tart and sweet.",
     "price": 55000,
-    "image": "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/strawberry.png",
     "category": "Classic",
     "nutrition": "Rich in Anthocyanins"
   },
@@ -67,16 +67,16 @@
     "name": "Vibrant Kiwi Slices",
     "description": "Exotic kiwi slices concentrated with tangy tropical flavor.",
     "price": 48000,
-    "image": "https://images.unsplash.com/photo-1585238341267-1cfec2046a55?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/kiwi.png",
     "category": "Exotic",
     "nutrition": "Excellent Vitamin K Source"
   },
   {
     "id": 9,
-    "name": "Pure Apple Crisps",
+    "name": "Crunchy Apple Chips",
     "description": "Thin, crunchy slices of premium Gala apples with zero additives.",
     "price": 32000,
-    "image": "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/apple.png",
     "category": "Crunchy",
     "nutrition": "Natural Multivitamin"
   },
@@ -85,7 +85,7 @@
     "name": "Toasted Coconut Flakes",
     "description": "Crispy, aromatic coconut slices from the finest tropical groves.",
     "price": 28000,
-    "image": "https://images.unsplash.com/photo-1584306670957-acf935f5033c?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/coconut.png",
     "category": "Exotic",
     "nutrition": "Healthy MCT Fats"
   },
@@ -94,7 +94,7 @@
     "name": "Pink Guava Spears",
     "description": "Rare pink guava slices, slowly dried to preserve their unique fragrance.",
     "price": 46000,
-    "image": "https://images.unsplash.com/photo-1536657464919-892534f60d6e?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/guava.png",
     "category": "Wellness",
     "nutrition": "High in Lycopene"
   },
@@ -103,8 +103,17 @@
     "name": "Signature Snake Fruit",
     "description": "The pride of Indonesia: Salak Pondoh crisps with a honey-like sweetness.",
     "price": 50000,
-    "image": "https://images.unsplash.com/photo-1590425660882-ec2e4854581c?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/salak.png",
     "category": "Classic",
     "nutrition": "Ancient Energy Source"
+  },
+  {
+    "id": 13,
+    "name": "Artisan Dried Apple",
+    "description": "Soft, chewy premium apple slices, naturally sweet and fiber-rich.",
+    "price": 36000,
+    "image": "assets/products/apple_chewy.png",
+    "category": "Wellness",
+    "nutrition": "High in Pectin"
   }
 ]

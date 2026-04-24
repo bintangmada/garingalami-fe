@@ -10,6 +10,7 @@ const ProductCard = ({ product, index }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [localToast, setLocalToast] = useState(null);
 
   const cartItem = cart?.find(item => item.id === product.id);
@@ -146,9 +147,14 @@ const ProductCard = ({ product, index }) => {
               </div>
             )}
           </div>
-          <img 
+          <motion.img 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isLoaded ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             src={imageError ? fallbackImage : product.image} 
             alt={product.name}
+            loading="lazy"
+            onLoad={() => setIsLoaded(true)}
             onError={() => setImageError(true)}
             className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover/img:scale-105"
           />

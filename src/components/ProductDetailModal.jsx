@@ -38,7 +38,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
             </button>
 
             {/* Image Section */}
-            <div className="h-56 md:h-auto md:w-1/2">
+            <div className="h-64 md:h-auto md:w-1/2 relative overflow-hidden">
               <img 
                 src={imageError ? fallbackImage : product.image} 
                 alt={product.name}
