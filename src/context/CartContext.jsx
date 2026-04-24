@@ -34,7 +34,6 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
-    showToast(`${product.name.toUpperCase()} ADDED TO COLLECTION!`);
   };
 
   const removeFromCart = (id) => {

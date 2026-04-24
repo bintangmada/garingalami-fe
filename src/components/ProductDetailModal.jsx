@@ -4,7 +4,7 @@ import { X, ShoppingBag, CheckCircle, Leaf } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const ProductDetailModal = ({ product, isOpen, onClose }) => {
-  const { addToCart } = useCart();
+  const { addToCart, showToast } = useCart();
   const [imageError, setImageError] = useState(false);
 
   const fallbackImage = "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&q=80&w=800";
@@ -67,6 +67,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
                 <button 
                   onClick={() => {
                     addToCart(product);
+                    showToast(`${product.name.toUpperCase()} ADDED`);
                     onClose();
                   }}
                   className="w-full max-w-[200px] md:max-w-[240px] bg-[#2D5A27] text-[#FEFAE0] py-3.5 md:py-5 rounded-none text-[9px] md:text-[11px] font-bold uppercase tracking-[0.4em] hover:bg-[#344E41] transition-all"
