@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
-const BossRoom = () => {
+const BossRoom = ({ onClose }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -85,8 +85,8 @@ const BossRoom = () => {
         {/* Footer */}
         <div className="pt-12 text-center">
           <button 
-            onClick={() => window.location.href = '/garingalami-fe/'}
-            className="text-white/10 hover:text-white/30 text-[9px] uppercase tracking-[0.3em] font-bold transition-all"
+            onClick={onClose}
+            className="text-white/10 hover:text-white/30 text-[9px] uppercase tracking-[0.3em] font-bold transition-all underline underline-offset-8"
           >
             Return to Public Atelier
           </button>

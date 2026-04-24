@@ -10,7 +10,6 @@ function App() {
     <CartProvider>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/bossroom" element={<BossRoom />} />
       </Routes>
       <Toast />
     </CartProvider>

@@ -3,9 +3,26 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, Leaf, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
-const Navbar = ({ onOpenCart, searchTerm, onSearch }) => {
+const Navbar = ({ onOpenCart, searchTerm, onSearch, onTriggerAdmin }) => {
   const { totalItems } = useCart();
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+  const [clickCount, setClickCount] = React.useState(0);
+  const [lastClickTime, setLastClickTime] = React.useState(0);
+
+  const handleLogoClick = () => {
+    const now = Date.now();
+    if (now - lastClickTime < 500) {
+      setClickCount(prev => prev + 1);
+    } else {
+      setClickCount(1);
+    }
+    setLastClickTime(now);
+
+    if (clickCount + 1 >= 5) {
+      onTriggerAdmin();
+      setClickCount(0);
+    }
+  };
 
   const searchInputRef = React.useRef(null);
 
@@ -18,7 +35,10 @@ const Navbar = ({ onOpenCart, searchTerm, onSearch }) => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass transition-all duration-500">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 md:py-6 flex justify-between items-center">
-        <div className="flex items-center gap-4 group relative cursor-help">
+        <div 
+          onClick={handleLogoClick}
+          className="flex items-center gap-4 group relative cursor-help active:scale-95 transition-transform"
+        >
           {/* Elegant Artistic Leaf Logo */}
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 md:w-10 md:h-10 transition-transform duration-700 group-hover:rotate-[360deg] flex items-center justify-center">

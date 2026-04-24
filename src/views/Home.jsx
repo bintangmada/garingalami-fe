@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import InfoModal from '../components/InfoModal';
 import AboutSection from '../components/AboutSection';
+import BossRoom from '../views/BossRoom';
 import products from '../data/products.json';
 
 const Home = () => {
@@ -13,6 +14,7 @@ const Home = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [infoModal, setInfoModal] = useState({ isOpen: false, type: '' });
+  const [isBossRoomOpen, setIsBossRoomOpen] = useState(false);
 
   const categories = ['Classic', 'Exotic', 'Crunchy', 'Wellness'];
 
@@ -45,6 +47,7 @@ const Home = () => {
         onOpenCart={() => setIsCartOpen(true)} 
         searchTerm={searchTerm}
         onSearch={setSearchTerm}
+        onTriggerAdmin={() => setIsBossRoomOpen(true)}
       />
       
       <main className="pt-24 md:pt-32 pb-20 max-w-7xl mx-auto overflow-x-hidden">
@@ -150,6 +153,18 @@ const Home = () => {
             type={infoModal.type} 
             onClose={() => setInfoModal({ ...infoModal, isOpen: false })} 
           />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isBossRoomOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100]"
+          >
+            <BossRoom onClose={() => setIsBossRoomOpen(false)} />
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
