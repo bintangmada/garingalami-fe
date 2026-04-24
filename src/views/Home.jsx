@@ -106,8 +106,8 @@ const Home = () => {
         </section>
 
         {/* Minimalist Footer */}
-        <footer className="mt-60 pb-20 px-6 border-t border-[#2D5A27]/5 pt-20">
-          <div className="flex flex-col md:flex-row gap-12 justify-between items-center text-[9px] uppercase font-bold tracking-[0.4em] text-[#2D5A27]/30">
+        <footer className="mt-40 md:mt-60 pb-20 px-6 border-t border-[#2D5A27]/5 pt-20">
+          <div className="flex flex-col md:flex-row gap-12 justify-between items-center text-[10px] md:text-[11px] uppercase font-bold tracking-[0.3em] md:tracking-[0.4em] text-[#2D5A27]/40">
             <div className="font-medium italic">Garing Alami &copy; 2026</div>
             <div className="flex gap-12">
               <button onClick={() => setInfoModal({ isOpen: true, type: 'about' })} className="hover:text-[#2D5A27] transition-all">Philosophy</button>
