@@ -1,19 +1,34 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Lock, ArrowRight, Eye, EyeOff, User } from 'lucide-react';
+import axios from 'axios';
 
 const BossRoom = ({ onClose }) => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === 'bintangmada') {
-      alert('Welcome to the Boss Room!');
-      // Future: Navigate to real dashboard
-    } else {
-      setError('Invalid Access Key');
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await axios.post('http://localhost:8080/api/auth/login', {
+        username,
+        password
+      });
+
+      if (response.status === 200) {
+        alert('Access Granted. Welcome, ' + response.data.username);
+        // Future: Set auth state and show dashboard
+      }
+    } catch (err) {
+      setError(err.response?.data || 'Connection failed to the Atelier server');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -42,7 +57,21 @@ const BossRoom = ({ onClose }) => {
         </div>
 
         {/* Secret Form */}
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-4">
+          {/* Username Field */}
+          <div className="relative">
+            <input 
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="USERNAME"
+              required
+              className="w-full bg-[#141414] border border-white/5 rounded-2xl px-6 py-5 text-white text-[11px] tracking-[0.4em] placeholder:text-white/10 focus:outline-none focus:border-[#2D5A27]/50 transition-all font-bold"
+            />
+            <User size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-white/5" />
+          </div>
+
+          {/* Password Field */}
           <div className="relative group">
             <input 
               type={showPassword ? "text" : "password"}
@@ -51,7 +80,8 @@ const BossRoom = ({ onClose }) => {
                 setPassword(e.target.value);
                 setError('');
               }}
-              placeholder="ENTER ACCESS KEY"
+              placeholder="ACCESS KEY"
+              required
               className="w-full bg-[#141414] border border-white/5 rounded-2xl px-6 py-5 text-white text-[11px] tracking-[0.4em] placeholder:text-white/10 focus:outline-none focus:border-[#2D5A27]/50 transition-all font-bold"
             />
             <button 
@@ -75,9 +105,10 @@ const BossRoom = ({ onClose }) => {
 
           <button 
             type="submit"
-            className="w-full bg-[#2D5A27] text-white py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] hover:bg-[#346a2d] transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-[#2D5A27]/20"
+            disabled={isLoading}
+            className="w-full bg-[#2D5A27] text-white py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] hover:bg-[#346a2d] transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-[#2D5A27]/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Authenticate
+            {isLoading ? "Authenticating..." : "Authenticate"}
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </form>
