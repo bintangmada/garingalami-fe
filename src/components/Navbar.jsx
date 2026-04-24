@@ -31,7 +31,7 @@ const Navbar = ({ onOpenCart, searchTerm, onSearch }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-6 md:gap-12">
+        <div className="flex items-center gap-3 md:gap-12">
           {/* Responsive Search */}
           <div className="relative flex items-center">
             <motion.div 
@@ -59,10 +59,10 @@ const Navbar = ({ onOpenCart, searchTerm, onSearch }) => {
           <div className="shrink-0">
             <button 
               onClick={onOpenCart}
-              className="group relative flex items-center gap-3 text-[#2D5A27]/60 hover:text-[#2D5A27] transition-all"
+              className="group relative flex items-center gap-2 md:gap-3 text-[#2D5A27]/60 hover:text-[#2D5A27] transition-all whitespace-nowrap"
             >
               <div className="w-px h-4 bg-[#2D5A27]/10" />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em]">
+              <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">
                 Collection {totalItems > 0 && <span className="ml-1 text-[#2D5A27]/30 group-hover:text-[#2D5A27]">[{totalItems}]</span>}
               </span>
             </button>
