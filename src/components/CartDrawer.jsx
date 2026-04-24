@@ -303,29 +303,29 @@ const CartDrawer = ({ isOpen, onClose }) => {
                   </button>
                 </div>
              )}
-           </motion.div>
- 
-           <ConfirmDialog 
-             isOpen={!!confirmItem}
-             type="drawer"
-             message={`Hapus ${confirmItem?.name} dari keranjang?`}
-             onConfirm={executeRemove}
-             onCancel={() => setConfirmItem(null)}
-           />
 
-           <ConfirmDialog 
-             isOpen={showClearConfirm}
-             type="drawer"
-             message="Hapus semua barang dari koleksi?"
-             onConfirm={() => {
-               clearCart();
-               showToast("COLLECTION CLEARED");
-               setShowClearConfirm(false);
-             }}
-             onCancel={() => setShowClearConfirm(false)}
-           />
+             <ConfirmDialog 
+               isOpen={!!confirmItem}
+               type="drawer"
+               message={`Hapus ${confirmItem?.name} dari keranjang?`}
+               onConfirm={executeRemove}
+               onCancel={() => setConfirmItem(null)}
+             />
+
+             <ConfirmDialog 
+               isOpen={showClearConfirm}
+               type="drawer"
+               message="Hapus semua barang dari koleksi?"
+               onConfirm={() => {
+                 clearCart();
+                 showToast("COLLECTION CLEARED");
+                 setShowClearConfirm(false);
+               }}
+               onCancel={() => setShowClearConfirm(false)}
+             />
+           </motion.div>
          </div>
-      )}
+       )}
     </AnimatePresence>
   );
 };
