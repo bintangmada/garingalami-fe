@@ -119,7 +119,7 @@ const Home = () => {
               </div>
               <button 
                 onClick={() => { setSearchTerm(''); setSelectedCategories([]); }}
-                className="px-12 py-5 bg-[#2D5A27] text-[#FEFAE0] text-[9px] font-black uppercase tracking-[0.5em] hover:bg-[#344E41] hover:px-14 transition-all rounded-full shadow-2xl shadow-[#2D5A27]/10"
+                className="px-12 py-5 bg-[#2D5A27] text-white text-[10px] font-black uppercase tracking-[0.5em] hover:bg-[#344E41] hover:px-14 transition-all rounded-full shadow-2xl shadow-[#2D5A27]/10"
               >
                 Reset Discovery
               </button>
