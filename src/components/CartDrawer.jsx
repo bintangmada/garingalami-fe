@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Plus, Minus, Send, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { X, Trash2, Plus, Minus, Send, ShoppingBag, ArrowLeft, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -17,6 +17,12 @@ const CartDrawer = ({ isOpen, onClose }) => {
     setLocalToast(msg);
     setTimeout(() => setLocalToast(null), 2000);
   };
+
+  const [cartSearch, setCartSearch] = useState('');
+
+  const filteredCart = cart.filter(item => 
+    item.name.toLowerCase().includes(cartSearch.toLowerCase())
+  );
 
   const fallbackImage = "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&q=80&w=800";
 
@@ -95,7 +101,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
             transition={{ type: 'tween', duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="relative w-full max-w-[480px] bg-white h-full shadow-2xl flex flex-col p-8 overflow-hidden"
           >
-              <div className="relative w-full flex items-center justify-center mb-12 mt-2">
+              <div className="relative w-full flex items-center justify-center mb-8 mt-2">
                 {/* Compact Navigation Control */}
                 <div className="flex items-center justify-center gap-6 py-2 px-8 bg-[#2D5A27]/[0.02] rounded-full border border-[#2D5A27]/5">
                   <button 
@@ -131,14 +137,27 @@ const CartDrawer = ({ isOpen, onClose }) => {
               </div>
 
             {step === 'cart' && cart.length > 0 && (
-              <div className="flex justify-end mb-6">
-                <button 
-                  onClick={() => setShowClearConfirm(true)}
-                  className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] text-red-400/40 hover:text-red-400 transition-all group"
-                >
-                  <Trash2 className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                  Clear Collection
-                </button>
+              <div className="space-y-6 mb-8">
+                <div className="relative group">
+                  <input 
+                    type="text"
+                    placeholder="Search in your collection..."
+                    value={cartSearch}
+                    onChange={(e) => setCartSearch(e.target.value)}
+                    className="w-full bg-[#2D5A27]/[0.03] border-b border-[#2D5A27]/10 py-3 pl-2 pr-10 text-[10px] font-bold uppercase tracking-[0.2em] outline-none focus:border-[#2D5A27] focus:bg-[#2D5A27]/[0.05] transition-all text-[#2D5A27] placeholder:text-[#2D5A27]/20"
+                  />
+                  <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#2D5A27]/20 group-focus-within:text-[#2D5A27] transition-colors" />
+                </div>
+                
+                <div className="flex justify-end">
+                  <button 
+                    onClick={() => setShowClearConfirm(true)}
+                    className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] text-red-400/40 hover:text-red-400 transition-all group"
+                  >
+                    <Trash2 className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                    Clear Collection
+                  </button>
+                </div>
               </div>
             )}
 
@@ -187,49 +206,55 @@ const CartDrawer = ({ isOpen, onClose }) => {
                ) : (
                  <div className="space-y-12">
                    {step === 'cart' && (
-                     <div className="space-y-8">
-                       {cart.map((item) => (
-                         <motion.div 
-                           layout
-                           initial={{ opacity: 0 }}
-                           animate={{ opacity: 1 }}
-                           key={item.id} 
-                           className="flex gap-4 items-start"
-                         >
-                           <div className="w-20 h-20 bg-gray-50 rounded-lg overflow-hidden shrink-0">
-                             <img 
-                               src={item.image} 
-                               alt={item.name} 
-                               onError={(e) => { e.target.src = fallbackImage; }}
-                               className="w-full h-full object-cover" 
-                             />
-                           </div>
-                           <div className="flex-1 min-w-0 pt-1">
-                             <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#2D5A27] truncate mb-1">{item.name}</h4>
-                             <p className="text-[10px] font-medium text-[#2D5A27]/60 mb-3">Rp {item.price.toLocaleString('id-ID')}</p>
-                             <div className="flex items-center gap-4">
-                               <div className="flex items-center gap-3">
-                                 <button 
-                                   onClick={() => {
-                                     if (item.quantity === 1) handleRemove(item);
-                                     else updateQuantity(item.id, -1);
-                                   }} 
-                                   className={`p-1 transition-all ${item.quantity === 1 ? 'text-red-400/60 hover:text-red-400' : 'text-[#2D5A27]/40 hover:text-[#2D5A27]'}`}
-                                 >
-                                   {item.quantity === 1 ? <Trash2 className="w-3.5 h-3.5" /> : <Minus className="w-3 h-3" />}
-                                 </button>
-                                 <span className="text-[10px] font-bold w-4 text-center">{item.quantity}</span>
-                                 <button onClick={() => updateQuantity(item.id, 1)} className="text-[#2D5A27]/40 hover:text-[#2D5A27] p-1"><Plus className="w-3 h-3" /></button>
-                               </div>
-                             </div>
-                           </div>
-                           <button onClick={() => handleRemove(item)} className="text-[#2D5A27]/20 hover:text-red-400 p-2 transition-colors shrink-0">
-                             <Trash2 className="w-4 h-4" />
-                           </button>
-                         </motion.div>
-                       ))}
-                     </div>
-                   )}
+                      <div className="space-y-8">
+                        {filteredCart.length === 0 ? (
+                          <div className="py-20 text-center opacity-20">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.4em]">No matches found</p>
+                          </div>
+                        ) : (
+                          filteredCart.map((item) => (
+                            <motion.div 
+                              layout
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              key={item.id} 
+                              className="flex gap-4 items-start"
+                            >
+                              <div className="w-20 h-20 bg-gray-50 rounded-lg overflow-hidden shrink-0">
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name} 
+                                  onError={(e) => { e.target.src = fallbackImage; }}
+                                  className="w-full h-full object-cover" 
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0 pt-1">
+                                <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#2D5A27] truncate mb-1">{item.name}</h4>
+                                <p className="text-[10px] font-medium text-[#2D5A27]/60 mb-3">Rp {item.price.toLocaleString('id-ID')}</p>
+                                <div className="flex items-center gap-4">
+                                  <div className="flex items-center gap-3">
+                                    <button 
+                                      onClick={() => {
+                                        if (item.quantity === 1) handleRemove(item);
+                                        else updateQuantity(item.id, -1);
+                                      }} 
+                                      className={`p-1 transition-all ${item.quantity === 1 ? 'text-red-400/60 hover:text-red-400' : 'text-[#2D5A27]/40 hover:text-[#2D5A27]'}`}
+                                    >
+                                      {item.quantity === 1 ? <Trash2 className="w-3.5 h-3.5" /> : <Minus className="w-3 h-3" />}
+                                    </button>
+                                    <span className="text-[10px] font-bold w-4 text-center">{item.quantity}</span>
+                                    <button onClick={() => updateQuantity(item.id, 1)} className="text-[#2D5A27]/40 hover:text-[#2D5A27] p-1"><Plus className="w-3 h-3" /></button>
+                                  </div>
+                                </div>
+                              </div>
+                              <button onClick={() => handleRemove(item)} className="text-[#2D5A27]/20 hover:text-red-400 p-2 transition-colors shrink-0">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </motion.div>
+                          ))
+                        )}
+                      </div>
+                    )}
  
                    {step === 'shipping' && (
                      <div className="pt-4 pb-8 space-y-12 animate-fade-in">
