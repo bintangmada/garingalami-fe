@@ -92,9 +92,9 @@ const CartDrawer = ({ isOpen, onClose }) => {
               {/* Global Close - Top Right */}
               <button 
                 onClick={onClose} 
-                className="absolute top-8 right-8 w-8 h-8 flex items-center justify-center text-[#2D5A27]/20 hover:text-red-400 transition-all duration-300 z-50"
+                className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center text-[#2D5A27]/30 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-500 z-50"
               >
-                <X size={20} strokeWidth={1.5} />
+                <X size={22} strokeWidth={1} />
               </button>
 
               <div className="relative w-full flex items-center justify-center mb-12 mt-4">
@@ -173,7 +173,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
 
                    <button 
                     onClick={onClose}
-                    className="text-[9px] font-black uppercase tracking-[0.5em] text-[#2D5A27]/60 hover:text-[#2D5A27] pt-12 transition-colors border-t border-[#2D5A27]/5 w-full"
+                    className="text-[9px] font-black uppercase tracking-[0.5em] text-[#2D5A27]/40 hover:text-[#2D5A27] pt-12 transition-all border-t border-[#2D5A27]/5 w-full hover:tracking-[0.6em]"
                    >
                      Back to Collection
                    </button>
@@ -289,19 +289,20 @@ const CartDrawer = ({ isOpen, onClose }) => {
                )}
             </div>
 
-            <div className="mt-12 pt-8 border-t border-[#2D5A27]/5 space-y-8">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#344E41]/40">Total</span>
-                <span className="text-lg font-black text-[#2D5A27]">Rp {totalPrice.toLocaleString('id-ID')}</span>
-              </div>
-               <button 
-                 disabled={cart.length === 0}
-                 onClick={handleCheckout}
-                 className="w-full bg-[#2D5A27] disabled:bg-gray-100 disabled:text-gray-300 text-[#FEFAE0] py-5 rounded-lg text-[10px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-[#344E41]"
-               >
-                 {step === 'cart' ? 'Proceed to Shipping' : step === 'shipping' ? 'Proceed to Payment' : 'Complete Acquisition'}
-               </button>
-             </div>
+             {cart.length > 0 && (
+               <div className="mt-auto pt-8 border-t border-[#2D5A27]/5 space-y-8 bg-white/80 backdrop-blur-sm">
+                 <div className="flex justify-between items-center">
+                   <span className="text-[10px] uppercase font-bold tracking-widest text-[#344E41]/40">Total</span>
+                   <span className="text-lg font-black text-[#2D5A27]">Rp {totalPrice.toLocaleString('id-ID')}</span>
+                 </div>
+                  <button 
+                    onClick={handleCheckout}
+                    className="w-full bg-[#2D5A27] text-[#FEFAE0] py-5 rounded-lg text-[10px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-[#344E41] shadow-lg shadow-[#2D5A27]/10"
+                  >
+                    {step === 'cart' ? 'Proceed to Shipping' : step === 'shipping' ? 'Proceed to Payment' : 'Complete Acquisition'}
+                  </button>
+                </div>
+             )}
            </motion.div>
  
            <ConfirmDialog 
