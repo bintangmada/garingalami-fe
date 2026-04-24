@@ -49,21 +49,21 @@ const CartDrawer = ({ isOpen, onClose }) => {
        setStep('shipping');
      } else if (step === 'shipping') {
        if (!userInfo.name && !userInfo.address) {
-         showToast("Lengkapi nama & alamat");
+         triggerLocalToast("LENGKAPI NAMA & ALAMAT");
          return;
        }
        if (!userInfo.name) {
-         showToast("Lengkapi nama");
+         triggerLocalToast("LENGKAPI NAMA");
          return;
        }
        if (!userInfo.address) {
-         showToast("Lengkapi alamat");
+         triggerLocalToast("LENGKAPI ALAMAT");
          return;
        }
        setStep('payment');
      } else if (step === 'payment') {
        if (!paymentMethod) {
-         showToast("Pilih metode pembayaran");
+         triggerLocalToast("PILIH METODE PEMBAYARAN");
          return;
        }
  
