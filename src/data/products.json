@@ -22,7 +22,7 @@
     "name": "Crunchy Dragon Fruit",
     "description": "Vibrant red pitaya slices with a satisfying crunch.",
     "price": 52000,
-    "image": "https://images.unsplash.com/photo-1527324688102-d8a8b13d77d3?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/dragonfruit.png",
     "category": "Exotic",
     "nutrition": "High in Antioxidants"
   },
@@ -67,7 +67,7 @@
     "name": "Vibrant Kiwi Slices",
     "description": "Exotic kiwi slices concentrated with tangy tropical flavor.",
     "price": 48000,
-    "image": "https://images.unsplash.com/photo-1518491755924-df5ad514c11b?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/kiwi.png",
     "category": "Exotic",
     "nutrition": "Excellent Vitamin K Source"
   },
@@ -103,7 +103,7 @@
     "name": "Signature Snake Fruit",
     "description": "The pride of Indonesia: Salak Pondoh crisps with a honey-like sweetness.",
     "price": 50000,
-    "image": "https://images.unsplash.com/photo-1601648764658-cf37e8c89b70?auto=format&fit=crop&q=80&w=800",
+    "image": "assets/products/salak.png",
     "category": "Classic",
     "nutrition": "Ancient Energy Source"
   }
