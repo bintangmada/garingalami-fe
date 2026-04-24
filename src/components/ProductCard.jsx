@@ -47,35 +47,20 @@ const ProductCard = ({ product, index }) => {
             )}
           </AnimatePresence>
 
-          {/* Elegant Bottom Slide-up Add to Cart / Selector / Confirm */}
+          {/* Elegant Bottom Slide-up Add to Cart / Selector */}
           <div 
             onClick={(e) => {
               e.stopPropagation();
               if (quantity === 0) addToCart(product);
             }}
-            className={`absolute bottom-0 left-0 right-0 bg-[#2D5A27]/95 backdrop-blur-sm translate-y-full group-hover/img:translate-y-0 transition-transform duration-500 ease-out z-20 flex items-center justify-center cursor-pointer py-0 ${showConfirm ? 'translate-y-0' : ''}`}
+            className={`absolute bottom-0 left-0 right-0 bg-[#2D5A27]/95 backdrop-blur-sm transition-all duration-500 ease-out z-20 flex items-center justify-center cursor-pointer py-0
+              ${quantity > 0 
+                ? 'translate-y-0 opacity-100' 
+                : 'translate-y-full opacity-0 lg:group-hover/img:translate-y-0 lg:group-hover/img:opacity-100'
+              }
+              max-lg:translate-y-0 max-lg:opacity-100`}
           >
-            {showConfirm ? (
-              <div className="flex items-stretch w-full h-[48px]" onClick={(e) => e.stopPropagation()}>
-                <button 
-                  onClick={() => setShowConfirm(false)}
-                  className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#FEFAE0]/40 hover:text-[#FEFAE0] hover:bg-white/5 transition-all duration-300"
-                >
-                  Cancel
-                </button>
-                <div className="w-[1px] bg-[#FEFAE0]/10 my-4"></div>
-                <button 
-                  onClick={() => {
-                    removeFromCart(product.id);
-                    showToast(`${product.name.toUpperCase()} REMOVED`);
-                    setShowConfirm(false);
-                  }}
-                  className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-red-300 hover:text-red-400 hover:bg-red-500/5 transition-all duration-300"
-                >
-                  Remove
-                </button>
-              </div>
-            ) : quantity > 0 ? (
+            {quantity > 0 ? (
               <div className="flex items-stretch w-full h-[48px]" onClick={(e) => e.stopPropagation()}>
                 {/* Direct Remove Button Area */}
                 <button 
@@ -127,6 +112,17 @@ const ProductCard = ({ product, index }) => {
           <p className="text-[11px] font-medium text-[#2D5A27]/60 tracking-widest italic">Rp {product.price.toLocaleString('id-ID')}</p>
         </div>
       </motion.div>
+
+      <ConfirmDialog 
+        isOpen={showConfirm}
+        message={`Remove ${product.name.toUpperCase()} from your collection?`}
+        onConfirm={() => {
+          removeFromCart(product.id);
+          showToast(`${product.name.toUpperCase()} REMOVED`);
+          setShowConfirm(false);
+        }}
+        onCancel={() => setShowConfirm(false)}
+      />
 
       <ProductDetailModal 
         product={product} 
