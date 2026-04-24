@@ -7,6 +7,14 @@ const Navbar = ({ onOpenCart, searchTerm, onSearch }) => {
   const { totalItems } = useCart();
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
 
+  const searchInputRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass transition-all duration-500">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 md:py-6 flex justify-between items-center">
@@ -40,12 +48,12 @@ const Navbar = ({ onOpenCart, searchTerm, onSearch }) => {
               className="overflow-hidden"
             >
               <input 
+                ref={searchInputRef}
                 type="text" 
                 placeholder="SEARCH COLLECTION..."
                 className="w-full bg-transparent py-1 text-[10px] uppercase font-bold tracking-[0.3em] outline-none border-b border-[#2D5A27]/20 focus:border-[#2D5A27] transition-all text-[#2D5A27] placeholder:text-[#2D5A27]/20"
                 value={searchTerm}
                 onChange={(e) => onSearch(e.target.value)}
-                autoFocus={isSearchOpen}
               />
             </motion.div>
             <button 
