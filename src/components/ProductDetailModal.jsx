@@ -37,14 +37,39 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
               <X className="w-3.5 h-3.5" />
             </button>
 
-            {/* Image Section */}
-            <div className="h-56 md:h-auto md:w-1/2">
-              <img 
-                src={imageError ? fallbackImage : product.image} 
-                alt={product.name}
-                onError={() => setImageError(true)}
-                className="w-full h-full object-cover"
-              />
+            {/* Cinematic Image Section */}
+            <div className="h-64 md:h-auto md:w-1/2 relative overflow-hidden group">
+              <motion.div 
+                initial={{ scale: 1.1 }}
+                animate={{ 
+                  scale: [1.1, 1.2, 1.1],
+                  x: [0, -10, 0],
+                  y: [0, -5, 0]
+                }}
+                transition={{ 
+                  duration: 20, 
+                  repeat: Infinity, 
+                  ease: "linear" 
+                }}
+                className="w-full h-full"
+              >
+                <img 
+                  src={imageError ? fallbackImage : product.image} 
+                  alt={product.name}
+                  onError={() => setImageError(true)}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              
+              {/* Filmic Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/5 via-transparent to-black/5 pointer-events-none" />
+              
+              {/* Video Badge */}
+              <div className="absolute bottom-6 left-6 flex items-center gap-3 py-1.5 px-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20 pointer-events-none">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white">Cinematic Showcase</span>
+              </div>
             </div>
 
             {/* Content Section */}
