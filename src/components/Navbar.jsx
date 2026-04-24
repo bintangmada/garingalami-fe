@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { ShoppingBag, Leaf, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
@@ -32,31 +33,38 @@ const Navbar = ({ onOpenCart, searchTerm, onSearch }) => {
 
         <div className="flex items-center gap-6 md:gap-12">
           {/* Responsive Search */}
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="text-[#2D5A27]/40 hover:text-[#2D5A27] transition-colors md:hidden"
+          <div className="relative flex items-center">
+            <motion.div 
+              initial={false}
+              animate={{ width: isSearchOpen ? (window.innerWidth > 768 ? 240 : 160) : 0 }}
+              className="overflow-hidden"
             >
-              <Search size={18} strokeWidth={1.5} />
-            </button>
-            
-            <div className={`${isSearchOpen ? 'w-40 opacity-100' : 'w-0 md:w-40 opacity-0 md:opacity-100'} overflow-hidden transition-all duration-700 ease-in-out`}>
               <input 
                 type="text" 
-                placeholder="SEARCH"
-                className="w-full bg-transparent py-1 text-[11px] uppercase font-bold tracking-[0.3em] outline-none border-b border-[#2D5A27]/10 focus:border-[#2D5A27]/30 transition-all text-[#2D5A27] placeholder:text-[#2D5A27]/30"
+                placeholder="SEARCH COLLECTION..."
+                className="w-full bg-transparent py-1 text-[10px] uppercase font-bold tracking-[0.3em] outline-none border-b border-[#2D5A27]/20 focus:border-[#2D5A27] transition-all text-[#2D5A27] placeholder:text-[#2D5A27]/20"
                 value={searchTerm}
                 onChange={(e) => onSearch(e.target.value)}
+                autoFocus={isSearchOpen}
               />
-            </div>
+            </motion.div>
+            <button 
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className={`p-2 transition-all duration-500 ${isSearchOpen ? 'text-[#2D5A27]' : 'text-[#2D5A27]/40 hover:text-[#2D5A27]'}`}
+            >
+              <Search size={16} strokeWidth={isSearchOpen ? 3 : 1.5} />
+            </button>
           </div>
           
           <div className="shrink-0">
             <button 
               onClick={onOpenCart}
-              className="relative text-[#2D5A27]/60 hover:text-[#2D5A27] transition-all"
+              className="group relative flex items-center gap-3 text-[#2D5A27]/60 hover:text-[#2D5A27] transition-all"
             >
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em] whitespace-nowrap">Cart {totalItems > 0 && `(${totalItems})`}</span>
+              <div className="w-px h-4 bg-[#2D5A27]/10" />
+              <span className="text-[11px] font-black uppercase tracking-[0.3em]">
+                Collection {totalItems > 0 && <span className="ml-1 text-[#2D5A27]/30 group-hover:text-[#2D5A27]">[{totalItems}]</span>}
+              </span>
             </button>
           </div>
         </div>
