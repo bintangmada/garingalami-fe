@@ -22,77 +22,89 @@ const AboutSection = () => {
   ];
 
   return (
-    <section className="px-6 md:px-12 py-20 md:py-40 bg-[#fdfdfd]">
+    <section className="px-6 md:px-12 py-24 md:py-48 bg-[#fdfdfd] overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 lg:gap-40 items-center">
           {/* Visual Storytelling */}
           <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+            transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
             className="relative"
           >
-            <div className="aspect-[4/5] md:aspect-[1/1.2] rounded-[2rem] overflow-hidden shadow-2xl shadow-[#2D5A27]/5">
+            <div className="relative aspect-[4/5] md:aspect-[1/1.2] rounded-3xl overflow-hidden shadow-[0_32px_64px_-16px_rgba(45,90,39,0.08)]">
               <img 
                 src="assets/brand-story.png" 
                 alt="Our Atelier" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-[3s] hover:scale-105"
               />
+              <div className="absolute inset-0 bg-[#2D5A27]/5 mix-blend-multiply" />
             </div>
+            
             {/* Elegant Floating Badge */}
             <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.5, duration: 1 }}
-              className="absolute -bottom-8 -right-8 bg-white p-8 md:p-12 shadow-xl rounded-2xl hidden md:block border border-[#2D5A27]/5"
+              transition={{ delay: 0.8, duration: 1.2 }}
+              className="absolute -bottom-6 -right-6 md:-bottom-12 md:-right-12 bg-white/90 backdrop-blur-md p-8 md:p-14 shadow-2xl rounded-2xl hidden md:block border border-[#2D5A27]/5"
             >
-              <p className="text-[14px] md:text-[16px] font-black text-[#2D5A27] tracking-widest uppercase leading-tight italic">
-                The Art of <br /> Preservation
-              </p>
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase tracking-[0.4em] text-[#2D5A27]/30 font-bold">Est. 1998</p>
+                <p className="text-[16px] md:text-[20px] font-light text-[#2D5A27] tracking-wider leading-tight">
+                  The Art of <br /> <span className="italic serif font-medium">Preservation</span>
+                </p>
+              </div>
             </motion.div>
           </motion.div>
 
           {/* Text Storytelling */}
-          <div className="space-y-12 md:space-y-20">
+          <div className="space-y-16 md:space-y-28">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 1 }}
-              className="space-y-6 md:space-y-8"
+              transition={{ duration: 1.2 }}
+              className="space-y-8 md:space-y-12"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-px bg-[#2D5A27]/20" />
-                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.6em] text-[#2D5A27]/40">Our Philosophy</span>
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-px bg-[#2D5A27]/10" />
+                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.8em] text-[#2D5A27]/30">The Atelier Creed</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-black text-[#2D5A27] leading-[1.1] tracking-tight">
+              
+              <h2 className="text-4xl md:text-6xl font-black text-[#2D5A27] leading-[1.05] tracking-tight">
                 Translating nature <br className="hidden md:block" /> 
-                into a <span className="italic font-medium">curated</span> <br className="hidden md:block" /> 
-                culinary experience.
+                into a <span className="italic font-light serif">curated</span> <br className="hidden md:block" /> 
+                culinary vibration.
               </h2>
-              <p className="text-[12px] md:text-[14px] leading-loose text-[#2D5A27]/60 tracking-wide font-medium max-w-lg">
-                At Garing Alami, we don't just dry fruits; we curate their essence. Our atelier follows a slow, meticulous process to ensure every bite resonates with the original vibration of the earth.
-              </p>
+              
+              <div className="space-y-6 max-w-lg">
+                <p className="text-[13px] md:text-[15px] leading-loose text-[#2D5A27]/60 tracking-wide font-medium italic">
+                  "We don't just dry fruits; we curate their essence."
+                </p>
+                <p className="text-[12px] md:text-[14px] leading-loose text-[#2D5A27]/50 tracking-wide font-normal">
+                  Our atelier follows a slow, meticulous preservation process. Every slice is a testament to our dedication to honoring the original frequency and soul of the earth's finest gifts.
+                </p>
+              </div>
             </motion.div>
 
             {/* Pillars */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12 pt-12 border-t border-[#2D5A27]/10">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-12 md:gap-16 pt-16 border-t border-[#2D5A27]/5">
               {pillars.map((pillar, idx) => (
                 <motion.div 
                   key={idx}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: idx * 0.2, duration: 0.8 }}
-                  className="space-y-4"
+                  transition={{ delay: idx * 0.2, duration: 1 }}
+                  className="space-y-5"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#2D5A27]/5 flex items-center justify-center mb-6">
+                  <div className="w-12 h-12 rounded-full bg-[#2D5A27]/5 flex items-center justify-center mb-4 transition-colors hover:bg-[#2D5A27]/10">
                     {pillar.icon}
                   </div>
-                  <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#2D5A27]">{pillar.title}</h4>
-                  <p className="text-[10px] leading-relaxed text-[#2D5A27]/50 font-medium tracking-wide">
+                  <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-[#2D5A27]">{pillar.title}</h4>
+                  <p className="text-[10px] md:text-[11px] leading-relaxed text-[#2D5A27]/40 font-medium tracking-wide">
                     {pillar.desc}
                   </p>
                 </motion.div>
