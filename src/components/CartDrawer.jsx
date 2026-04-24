@@ -313,10 +313,10 @@ const CartDrawer = ({ isOpen, onClose }) => {
              <AnimatePresence>
                 {localToast && (
                   <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute bottom-32 left-8 right-8 z-[150] bg-[#2D5A27] text-[#FEFAE0] py-4 px-6 rounded-xl shadow-2xl flex items-center gap-4 border border-[#FEFAE0]/10"
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-28 left-8 right-8 z-[150] bg-[#2D5A27] text-[#FEFAE0] py-4 px-6 rounded-xl shadow-2xl flex items-center gap-4 border border-[#FEFAE0]/10"
                   >
                     <div className="w-1 h-1 bg-[#FEFAE0] rounded-full animate-pulse" />
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] leading-none">{localToast}</span>
