@@ -99,9 +99,31 @@ const Home = () => {
           </div>
           
           {filteredProducts.length === 0 && (
-            <div className="py-40 text-center opacity-20">
-              <p className="text-[10px] uppercase font-bold tracking-[0.5em]">No pieces found</p>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="py-32 md:py-48 flex flex-col items-center text-center space-y-12"
+            >
+              <div className="w-48 h-48 md:w-64 md:h-64 opacity-20 grayscale hover:grayscale-0 hover:opacity-40 transition-all duration-[1.5s] ease-out">
+                <img 
+                  src="assets/empty-basket.png" 
+                  alt="Empty Basket" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="space-y-6">
+                <h3 className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.6em] text-[#2D5A27]">Uncharted Territory</h3>
+                <p className="text-[10px] md:text-[11px] font-medium text-[#2D5A27]/40 tracking-[0.2em] max-w-[280px] md:max-w-[340px] leading-relaxed italic mx-auto">
+                  The requested piece is currently not in our collection. Let us guide you back to our curated selection.
+                </p>
+              </div>
+              <button 
+                onClick={() => { setSearchTerm(''); setSelectedCategories([]); }}
+                className="px-12 py-5 bg-[#2D5A27] text-[#FEFAE0] text-[9px] font-black uppercase tracking-[0.5em] hover:bg-[#344E41] hover:px-14 transition-all rounded-full shadow-2xl shadow-[#2D5A27]/10"
+              >
+                Reset Discovery
+              </button>
+            </motion.div>
           )}
         </section>
 
