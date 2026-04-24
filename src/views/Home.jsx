@@ -102,7 +102,7 @@ const Home = () => {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="py-32 md:py-48 flex flex-col items-center text-center space-y-12"
+              className="pt-12 pb-32 md:pt-20 md:pb-48 flex flex-col items-center text-center space-y-12 w-full"
             >
               <div className="w-48 h-48 md:w-64 md:h-64 opacity-20 grayscale hover:grayscale-0 hover:opacity-40 transition-all duration-[1.5s] ease-out">
                 <img 
