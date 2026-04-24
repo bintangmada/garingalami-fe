@@ -230,7 +230,16 @@ const CartDrawer = ({ isOpen, onClose }) => {
                               </div>
                               <div className="flex-1 min-w-0 pt-1">
                                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#2D5A27] truncate mb-1">{item.name}</h4>
-                                <p className="text-[10px] font-medium text-[#2D5A27]/60 mb-3">Rp {item.price.toLocaleString('id-ID')}</p>
+                                <div className="flex items-center gap-2 mb-4">
+                                  <p className="text-[9px] font-medium text-[#2D5A27]/40 italic">
+                                    Rp {item.price.toLocaleString('id-ID')}
+                                    {item.quantity > 1 && <span className="ml-1 tracking-widest">× {item.quantity}</span>}
+                                  </p>
+                                  <div className="w-1 h-1 bg-[#2D5A27]/10 rounded-full" />
+                                  <p className="text-[10px] font-black text-[#2D5A27] tracking-tight">
+                                    Rp {(item.price * item.quantity).toLocaleString('id-ID')}
+                                  </p>
+                                </div>
                                 <div className="flex items-center gap-4">
                                   <div className="flex items-center gap-3">
                                     <button 
