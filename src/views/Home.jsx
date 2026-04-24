@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import InfoModal from '../components/InfoModal';
+import AboutSection from '../components/AboutSection';
 import products from '../data/products.json';
 
 const Home = () => {
@@ -126,6 +127,8 @@ const Home = () => {
             </motion.div>
           )}
         </section>
+
+        <AboutSection />
 
         {/* Minimalist Footer */}
         <footer className="mt-40 md:mt-60 pb-20 px-6 border-t border-[#2D5A27]/5 pt-20">
