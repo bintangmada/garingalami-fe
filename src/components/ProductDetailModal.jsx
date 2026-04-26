@@ -40,7 +40,7 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
             {/* Image Section */}
             <div className="h-64 md:h-auto md:w-1/2 relative overflow-hidden">
               <img 
-                src={imageError ? fallbackImage : product.image} 
+                src={imageError ? fallbackImage : (product.mainImageUrl || product.image)} 
                 alt={product.name}
                 onError={() => setImageError(true)}
                 className="w-full h-full object-cover"

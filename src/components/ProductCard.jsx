@@ -156,7 +156,7 @@ const ProductCard = ({ product, index }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: isLoaded ? 1 : 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            src={imageError ? fallbackImage : product.image} 
+            src={imageError ? fallbackImage : (product.mainImageUrl || product.image)} 
             alt={product.name}
             loading="lazy"
             onLoad={() => setIsLoaded(true)}
