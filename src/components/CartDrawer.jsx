@@ -222,7 +222,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                             >
                               <div className="w-20 h-20 bg-gray-50 rounded-lg overflow-hidden shrink-0">
                                 <img 
-                                  src={item.image} 
+                                  src={item.mainImageUrl || item.image} 
                                   alt={item.name} 
                                   onError={(e) => { e.target.src = fallbackImage; }}
                                   className="w-full h-full object-cover" 

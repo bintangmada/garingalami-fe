@@ -1,22 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Plus, Minus, Send, ShoppingBag, ArrowLeft, Check } from 'lucide-react';
+import { X, Trash2, Plus, Minus, Send, ShoppingBag, ArrowLeft, Check, Loader2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import InfoModal from '../components/InfoModal';
 import AboutSection from '../components/AboutSection';
 import BossRoom from '../views/BossRoom';
-import products from '../data/products.json';
+import axios from 'axios';
 
 const Home = () => {
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [infoModal, setInfoModal] = useState({ isOpen: false, type: '' });
-  const [isBossRoomOpen, setIsBossRoomOpen] = useState(false);
+  const [isBossRoomOpen, setIsBossRoomOpen] = useState(() => {
+    return localStorage.getItem('admin_session') === 'active';
+  });
 
   const categories = ['Classic', 'Exotic', 'Crunchy', 'Wellness'];
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/products');
+        setProducts(response.data);
+      } catch (err) {
+        console.error("Failed to fetch products from backend", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const toggleCategory = (cat) => {
     if (cat === 'All') {
@@ -96,7 +114,12 @@ const Home = () => {
         
         {/* Luxury Product Grid */}
         <section className="px-6 md:px-12 min-h-[40vh] flex flex-col">
-          {filteredProducts.length > 0 ? (
+          {isLoading ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="animate-spin text-[#2D5A27]" size={32} />
+              <span className="text-[10px] uppercase tracking-[0.5em] text-[#2D5A27]/40 font-bold">Consulting the Archive...</span>
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24 items-start">
               {filteredProducts.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />
