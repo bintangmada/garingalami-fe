@@ -1,10 +1,14 @@
 import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Home from './views/Home';
 import BossRoom from './views/BossRoom';
 import Toast from './components/Toast';
-import axios from 'axios';
+
+// Placeholder Client ID - User needs to replace this later
+const GOOGLE_CLIENT_ID = "257787800799-mif3vlingmg79nnmevn8nni79ue5qc2p.apps.googleusercontent.com";
 
 function App() {
   useEffect(() => {
@@ -19,13 +23,17 @@ function App() {
   }, []);
 
   return (
-    <CartProvider>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/boss-room" element={<BossRoom />} />
-      </Routes>
-      <Toast />
-    </CartProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <CartProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/boss-room" element={<BossRoom />} />
+          </Routes>
+          <Toast />
+        </CartProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

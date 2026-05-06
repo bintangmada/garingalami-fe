@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Leaf, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import UserMenu from './UserMenu';
 
 const Navbar = ({ onOpenCart, searchTerm, onSearch, onTriggerAdmin }) => {
   const { totalItems } = useCart();
@@ -95,6 +96,8 @@ const Navbar = ({ onOpenCart, searchTerm, onSearch, onTriggerAdmin }) => {
               </span>
             </button>
           </div>
+
+          <UserMenu />
         </div>
       </div>
     </nav>
