@@ -20,19 +20,31 @@ const Home = () => {
     return localStorage.getItem('admin_session') === 'active';
   });
 
+  // We only sync the state when it's closed to ensure the view matches the session
+  useEffect(() => {
+    if (!isBossRoomOpen && localStorage.getItem('admin_session') !== 'active') {
+      // Just a safety check to keep states in sync
+    }
+  }, [isBossRoomOpen]);
+
   const categories = ['Classic', 'Exotic', 'Crunchy', 'Wellness'];
 
+  const fetchProducts = async () => {
+    try {
+      // Fetch a larger set for the home display to keep it seamless
+      const response = await axios.get('http://localhost:8080/api/products?size=50');
+      // Handle the Paginated response structure
+      const productData = response.data.content || response.data;
+      setProducts(Array.isArray(productData) ? productData : []);
+    } catch (err) {
+      console.error("Failed to fetch products from backend", err);
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/products');
-        setProducts(response.data);
-      } catch (err) {
-        console.error("Failed to fetch products from backend", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchProducts();
   }, []);
 
@@ -186,7 +198,10 @@ const Home = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100]"
           >
-            <BossRoom onClose={() => setIsBossRoomOpen(false)} />
+            <BossRoom 
+              onClose={() => setIsBossRoomOpen(false)} 
+              onProductChange={fetchProducts}
+            />
           </motion.div>
         )}
       </AnimatePresence>

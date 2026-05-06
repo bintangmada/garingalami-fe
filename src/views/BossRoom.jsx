@@ -6,7 +6,7 @@ import CommandCenter from '../components/CommandCenter';
 
 console.log("%c 🚀 BOSS ROOM v4.0 TITANIUM READY ", "background: #1A1A1A; color: #10b981; font-weight: bold; padding: 10px;");
 
-const BossRoom = ({ onClose }) => {
+const BossRoom = ({ onClose, onProductChange }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -56,12 +56,14 @@ const BossRoom = ({ onClose }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('admin_session');
+    localStorage.removeItem('boss_active_tab');
+    localStorage.removeItem('admin_user');
     setIsAuthenticated(false);
     onClose();
   };
 
   if (isAuthenticated) {
-    return <CommandCenter onLogout={handleLogout} />;
+    return <CommandCenter onLogout={handleLogout} onProductChange={onProductChange} />;
   }
 
   return (

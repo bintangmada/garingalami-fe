@@ -8,7 +8,8 @@ import {
   Monitor, Settings, Database, Briefcase,
   Activity, PieChart, Info, Bell, ShieldCheck,
   FileText, Clock, Users, MousePointer2,
-  CheckCircle, ArrowUp, ArrowDown, ChevronDown, Filter
+  CheckCircle, ArrowUp, ArrowDown, ChevronDown, Filter,
+  CheckCircle2, AlertTriangle
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -17,8 +18,14 @@ import axios from 'axios';
 // ==========================================
 console.log("%c 🚀 COMMAND CENTER v5.0 ACTIVE ", "background: #1A1A1A; color: #10b981; font-weight: bold; padding: 15px; border: 2px solid #10b981;");
 
-const CommandCenter = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState('insights');
+const CommandCenter = ({ onLogout, onProductChange }) => {
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('boss_active_tab') || 'insights';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('boss_active_tab', activeTab);
+  }, [activeTab]);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,12 +36,23 @@ const CommandCenter = ({ onLogout }) => {
   const [logs, setLogs] = useState([]);
   const [isLogsLoading, setIsLogsLoading] = useState(false);
   const [analytics, setAnalytics] = useState({ dailyVisits: [], totalToday: 0 });
+  const [stats, setStats] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
+  
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   
   // Custom Elegant Notification States
   const [toasts, setToasts] = useState([]);
   const [confirmConfig, setConfirmConfig] = useState(null);
+  const [activePopover, setActivePopover] = useState(null);
+  
+  const [isConfirmingSave, setIsConfirmingSave] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   
   // DataTable Advanced States
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
@@ -42,7 +60,8 @@ const CommandCenter = ({ onLogout }) => {
     name: '',
     category: '',
     price: '',
-    quota: ''
+    quota: '',
+    status: 'all'
   });
 
   const adminUser = localStorage.getItem('admin_user') || 'Admin';
@@ -52,6 +71,7 @@ const CommandCenter = ({ onLogout }) => {
     category: 'Classic',
     price: '',
     quota: '',
+    status: 'all',
     description: '',
     mainImageUrl: '',
     expiryDate: ''
@@ -63,16 +83,19 @@ const CommandCenter = ({ onLogout }) => {
     fetchProducts();
     fetchLogs();
     fetchAnalytics();
+        fetchStats();
   }, []);
 
   useEffect(() => {
     // Initial fetch
     fetchAnalytics();
+        fetchStats();
 
     // Set up real-time polling (every 3 seconds)
     const interval = setInterval(() => {
       if (activeTab === 'insights') {
         fetchAnalytics();
+        fetchStats();
       } else if (activeTab === 'logs') {
         fetchLogs();
       }
@@ -126,16 +149,34 @@ const CommandCenter = ({ onLogout }) => {
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchStats = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/products');
-      setProducts(response.data);
+      const response = await axios.get('http://localhost:8080/api/products/admin/stats');
+      setStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    }
+  };
+
+  const fetchProducts = async (page = currentPage) => {
+    setIsLoading(true);
+    try {
+      // Send page and size as params
+      const response = await axios.get(`http://localhost:8080/api/products?page=${page}&size=${pageSize}`);
+      setProducts(response.data.content); // Access 'content' field from Page object
+      setTotalPages(response.data.totalPages);
+      setTotalElements(response.data.totalElements);
     } catch (err) {
       console.error("Fetch failed", err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Fetch when page changes
+  useEffect(() => {
+    fetchProducts();
+  }, [currentPage, pageSize]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -177,11 +218,18 @@ const CommandCenter = ({ onLogout }) => {
   const handleStartNew = () => {
     setEditingProduct(null);
     setIsAddingNew(true);
-    setFormData({ name: '', category: 'Classic', price: '', quota: '', description: '', mainImageUrl: '', expiryDate: '' });
+    setFormData({ name: '', category: 'Classic', price: '', quota: '',
+    status: 'all', description: '', mainImageUrl: '', expiryDate: '' });
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!isConfirmingSave) {
+      setIsConfirmingSave(true);
+      setTimeout(() => setIsConfirmingSave(false), 3000); // Reset after 3s
+      return;
+    }
+
     setIsSaving(true);
     try {
       const headers = { 'X-Admin-User': adminUser };
@@ -192,10 +240,16 @@ const CommandCenter = ({ onLogout }) => {
         await axios.post('http://localhost:8080/api/products/admin', formData, { headers });
         showToast("New archetype registered to core", "success");
       }
+      
+      // Real-time synchronization
+      if (onProductChange) onProductChange();
+      
       await fetchProducts();
+      await fetchStats();
       await fetchLogs();
       setEditingProduct(null);
       setIsAddingNew(false);
+      setIsConfirmingSave(false);
     } catch (err) {
       showToast("Core synchronization failed", "error");
     } finally {
@@ -203,28 +257,68 @@ const CommandCenter = ({ onLogout }) => {
     }
   };
 
-  const handleDelete = async (e, id) => {
-    e.stopPropagation();
-    
-    triggerConfirm(
-      "Confirm Decommission",
-      "Are you certain you wish to purge this record permanently from the core registry?",
-      async () => {
+          const executeToggleStatus = async (product) => {
+    try {
+      await axios.patch(`http://localhost:8080/api/products/admin/${product.id}/toggle`, {}, {
+        headers: { 'X-Admin-User': adminUser }
+      });
+      showToast('Registry status updated', 'success');
+      await fetchProducts(currentPage);
+      await fetchStats();
+      if (onProductChange) onProductChange();
+    } catch (err) {
+      showToast('Synchronization failed', 'error');
+    }
+  };
+
+  const handleToggleStatus = async (product) => {
+    setConfirmConfig({
+      title: product.active ? 'Archive Archetype?' : 'Activate Archetype?',
+      message: product.active 
+        ? `Are you sure you want to move "${product.name}" to the archive? It will be hidden from the public catalog.` 
+        : `Are you sure you want to reactivate "${product.name}"? It will be visible to all customers again.`,
+      confirmLabel: product.active ? 'Yes, Archive' : 'Yes, Activate',
+      confirmColor: product.active ? 'bg-rose-500' : 'bg-[#2D5A27]',
+      onConfirm: async () => {
         try {
-          await axios.delete(`http://localhost:8080/api/products/admin/${id}`, {
+          await axios.patch(`http://localhost:8080/api/products/admin/${product.id}/toggle`, {}, {
             headers: { 'X-Admin-User': adminUser }
           });
-          if (editingProduct?.id === id) setEditingProduct(null);
-          await fetchProducts();
-          await fetchLogs();
-          showToast("Record decommissioned successfully", "success");
+          showToast('Registry status updated', 'success');
+          await fetchProducts(currentPage);
+          await fetchStats();
+          if (onProductChange) onProductChange();
         } catch (err) {
-          showToast("Failed to purge record", "error");
+          showToast('Synchronization failed', 'error');
         }
-      },
-      'danger'
-    );
+        setConfirmConfig(null);
+      }
+    });
   };
+
+
+      const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await axios.patch(`http://localhost:8080/api/products/admin/${id}/toggle`, {}, {
+        headers: { 'X-Admin-User': adminUser }
+      });
+      showToast('Product archived successfully');
+      
+      if (onProductChange) onProductChange();
+      await fetchProducts(currentPage);
+      await fetchStats();
+      
+      setEditingProduct(null);
+      setIsAddingNew(false);
+      setIsConfirmingDelete(false);
+    } catch (err) {
+      console.error('Archive failed detailed error:', err.response?.data || err.message);
+      showToast('Failed to archive product', 'error');
+    }
+  };
+
+
 
   const handleLogoutWithWarning = () => {
     setShowLogoutConfirm(true);
@@ -247,7 +341,8 @@ const CommandCenter = ({ onLogout }) => {
       const matchesPrice = columnFilters.price === '' || p.price?.toString().includes(columnFilters.price);
       const matchesQuota = columnFilters.quota === '' || p.quota?.toString().includes(columnFilters.quota);
       
-      return matchesSearch && matchesName && matchesCat && matchesPrice && matchesQuota;
+      const matchesStatus = columnFilters.status === "all" ? true : (columnFilters.status === "active" ? product.active : !product.active);
+      return matchesSearch && matchesName && matchesCat && matchesPrice && matchesQuota && matchesStatus;
     })
     .sort((a, b) => {
       const aVal = a[sortConfig.key];
@@ -321,7 +416,8 @@ const CommandCenter = ({ onLogout }) => {
                  <Bell size={18} strokeWidth={1.5} />
               </button>
               
-              <div className="relative">
+              
+                    <div className="relative">
                 <button 
                   onClick={handleLogoutWithWarning}
                   className="w-10 h-10 rounded-xl bg-[#FAFAFA] text-[#A0A0A0] border border-[#F0F0F0] flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-95"
@@ -377,7 +473,7 @@ const CommandCenter = ({ onLogout }) => {
            </div>
         </header>
 
-        <main className="flex-1 p-8 lg:p-10 bg-[#FAFAFA] overflow-hidden flex flex-col">
+        <main className="flex-1 p-6 lg:p-6 bg-[#FAFAFA] overflow-hidden flex flex-col">
           <AnimatePresence mode="wait">
             {activeTab === 'insights' ? (
               <motion.div 
@@ -385,7 +481,7 @@ const CommandCenter = ({ onLogout }) => {
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.02 }}
-                className="flex-1 flex flex-col gap-8 max-w-[1500px] mx-auto w-full"
+                className="flex-1 flex flex-col gap-8 w-full"
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
                   {[
@@ -455,8 +551,35 @@ const CommandCenter = ({ onLogout }) => {
                 key="inventory"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="relative flex flex-col h-[calc(100vh-200px)]"
+                className="relative flex flex-col w-full h-[calc(100vh-140px)]"
               >
+                                {/* STATS OVERVIEW */}
+                {stats && (
+                  <div className="grid grid-cols-4 gap-6 mb-8 shrink-0">
+                    {[
+                      { label: 'Total Archetypes', value: stats.totalActive, icon: Database, color: 'text-blue-500', bg: 'bg-blue-50' },
+                      { label: 'Stock Volume', value: stats.totalStock?.toLocaleString(), icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                      { label: 'Category Spread', value: stats.categoryCount, icon: Layers, color: 'text-amber-500', bg: 'bg-amber-50' },
+                      { label: 'Inactive Archetypes', value: stats.archivedCount, icon: Trash2, color: 'text-rose-500', bg: 'bg-rose-50' }
+                    ].map((stat, i) => (
+                      <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="bg-white border border-[#F2F2F2] p-6 rounded-[2rem] flex items-center gap-5 shadow-sm hover:shadow-md transition-all"
+                      >
+                        <div className={`p-4 ${stat.bg} ${stat.color} rounded-2xl`}>
+                          <stat.icon size={20} />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#A0A0A0]">{stat.label}</p>
+                          <h4 className="text-[18px] font-black text-[#1A1A1A] mt-1">{stat.value}</h4>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
                 {/* ACTION BAR */}
                 <div className="mb-6 flex items-center justify-between gap-6 shrink-0">
                    <div className="flex items-center gap-4">
@@ -469,7 +592,8 @@ const CommandCenter = ({ onLogout }) => {
                       </div>
                    </div>
                    <div className="flex items-center gap-4">
-                      <div className="relative">
+                                          
+                    <div className="relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#CCCCCC]" size={16} />
                         <input 
                           type="text" 
@@ -479,9 +603,10 @@ const CommandCenter = ({ onLogout }) => {
                           className="bg-white border border-[#F0F0F0] rounded-2xl pl-12 pr-6 py-4 text-[11px] font-bold tracking-wider focus:outline-none focus:border-[#2D5A27]/30 transition-all text-[#1A1A1A] placeholder:text-[#CCCCCC] w-96 shadow-sm"
                         />
                       </div>
+                                          
                       <button 
                         onClick={handleStartNew}
-                        className="bg-[#2D5A27] hover:bg-[#1A5A27] text-white px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] transition-all shadow-xl shadow-[#2D5A27]/20 flex items-center gap-3"
+                        className="bg-[#2D5A27] hover:bg-[#1A5A27] text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] transition-all shadow-xl shadow-[#2D5A27]/20 flex items-center gap-3"
                       >
                         <Plus size={16} />
                         Register Archetype
@@ -495,30 +620,42 @@ const CommandCenter = ({ onLogout }) => {
                       <table className="w-full text-left border-separate border-spacing-0">
                         <thead className="sticky top-0 bg-white/95 backdrop-blur-md z-30">
                           <tr>
-                            <th className="px-10 py-6 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">
+                                                        <th className="px-6 py-4 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">Status</th>
+                            <th className="px-6 py-4 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">
                               <button onClick={() => requestSort('name')} className="flex items-center gap-2 hover:text-[#2D5A27] transition-colors">
                                 Product Designation {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
                               </button>
                             </th>
-                            <th className="px-10 py-6 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">
+                            <th className="px-6 py-4 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">
                               <button onClick={() => requestSort('category')} className="flex items-center gap-2 hover:text-[#2D5A27] transition-colors">
                                 Category Class {sortConfig.key === 'category' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
                               </button>
                             </th>
-                            <th className="px-10 py-6 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">
+                            <th className="px-6 py-4 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">
                               <button onClick={() => requestSort('price')} className="flex items-center gap-2 hover:text-[#2D5A27] transition-colors">
                                 Valuation {sortConfig.key === 'price' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
                               </button>
                             </th>
-                            <th className="px-10 py-6 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">
+                            <th className="px-6 py-4 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">
                               <button onClick={() => requestSort('quota')} className="flex items-center gap-2 hover:text-[#2D5A27] transition-colors">
                                 Inventory {sortConfig.key === 'quota' && (sortConfig.direction === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
                               </button>
                             </th>
-                            <th className="px-10 py-6 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">Life Cycle</th>
+                            <th className="px-6 py-4 border-b border-[#F8F8F8] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] bg-[#FAFAFA]/20">Status & Cycle</th>
                           </tr>
                           <tr className="bg-[#FAFAFA]/50">
-                            <td className="px-8 py-3 border-b border-[#F8F8F8]">
+                            <td className="px-6 py-2 border-b border-[#F8F8F8]">
+                              <select 
+                                value={columnFilters.status}
+                                onChange={(e) => setColumnFilters({...columnFilters, status: e.target.value})}
+                                className="w-full bg-white border border-[#F0F0F0] rounded-xl px-4 py-2.5 text-[10px] font-bold focus:outline-none focus:border-[#2D5A27]/30"
+                              >
+                                <option value="all">All Status</option>
+                                <option value="active">Active Only</option>
+                                <option value="inactive">Archived Only</option>
+                              </select>
+                            </td>
+                            <td className="px-6 py-2 border-b border-[#F8F8F8]">
                               <input 
                                 placeholder="Filter name..."
                                 value={columnFilters.name}
@@ -526,7 +663,7 @@ const CommandCenter = ({ onLogout }) => {
                                 className="w-full bg-white border border-[#F0F0F0] rounded-xl px-4 py-2.5 text-[10px] font-bold focus:outline-none focus:border-[#2D5A27]/30"
                               />
                             </td>
-                            <td className="px-8 py-3 border-b border-[#F8F8F8]">
+                            <td className="px-6 py-2 border-b border-[#F8F8F8]">
                               <select 
                                 value={columnFilters.category}
                                 onChange={(e) => setColumnFilters({...columnFilters, category: e.target.value})}
@@ -536,7 +673,7 @@ const CommandCenter = ({ onLogout }) => {
                                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
                               </select>
                             </td>
-                            <td className="px-8 py-3 border-b border-[#F8F8F8]">
+                            <td className="px-6 py-2 border-b border-[#F8F8F8]">
                               <input 
                                 placeholder="Price range..."
                                 value={columnFilters.price}
@@ -544,7 +681,7 @@ const CommandCenter = ({ onLogout }) => {
                                 className="w-full bg-white border border-[#F0F0F0] rounded-xl px-4 py-2.5 text-[10px] font-bold focus:outline-none"
                               />
                             </td>
-                            <td className="px-8 py-3 border-b border-[#F8F8F8]">
+                            <td className="px-6 py-2 border-b border-[#F8F8F8]">
                               <input 
                                 placeholder="Stock level..."
                                 value={columnFilters.quota}
@@ -552,7 +689,7 @@ const CommandCenter = ({ onLogout }) => {
                                 className="w-full bg-white border border-[#F0F0F0] rounded-xl px-4 py-2.5 text-[10px] font-bold focus:outline-none"
                               />
                             </td>
-                            <td className="px-8 py-3 border-b border-[#F8F8F8]">
+                            <td className="px-6 py-2 border-b border-[#F8F8F8]">
                                <div className="text-center text-[8px] font-black text-[#D0D0D0] uppercase tracking-widest">Active Filters</div>
                             </td>
                           </tr>
@@ -565,7 +702,53 @@ const CommandCenter = ({ onLogout }) => {
                               className={`hover:bg-[#2D5A27]/[0.03] transition-colors cursor-pointer group
                                 ${editingProduct?.id === p.id ? 'bg-[#2D5A27]/[0.05]' : ''}`}
                             >
-                              <td className="px-10 py-4">
+                                                            <td className="px-6 py-4">
+                                                                <div className="relative inline-block">
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setActivePopover(p.id); }}
+                                    title={p.active ? "Deactivate Product" : "Activate Product"}
+                                    className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer hover:scale-105 active:scale-95 ${p.active ? "bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-600 hover:text-white" : "bg-rose-50 text-rose-500 border border-rose-100 hover:bg-rose-500 hover:text-white"}`}
+                                  >
+                                    {p.active ? "Active" : "Archived"}
+                                  </button>
+
+                                  <AnimatePresence>
+                                    {activePopover === p.id && (
+                                      <>
+                                        <div className="fixed inset-0 z-[50]" onClick={(e) => { e.stopPropagation(); setActivePopover(null); }} />
+                                        <motion.div 
+                                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-[200px] bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.15)] border border-[#F0F0F0] p-4 z-[60] text-center"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <p className="text-[9px] font-black uppercase tracking-wider text-[#1A1A1A] mb-3">{p.active ? 'Archive this?' : 'Activate this?'}</p>
+                                          <div className="flex gap-2">
+                                            <button 
+                                              onClick={() => setActivePopover(null)}
+                                              className="flex-1 py-2 rounded-lg bg-[#FAFAFA] text-[#A0A0A0] text-[8px] font-black uppercase tracking-widest hover:bg-[#F2F2F2]"
+                                            >
+                                              No
+                                            </button>
+                                            <button 
+                                              onClick={() => {
+                                                executeToggleStatus(p);
+                                                setActivePopover(null);
+                                              }}
+                                              className={`flex-1 py-2 rounded-lg text-white text-[8px] font-black uppercase tracking-widest ${p.active ? 'bg-rose-500' : 'bg-[#2D5A27]'}`}
+                                            >
+                                              Yes
+                                            </button>
+                                          </div>
+                                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white" />
+                                        </motion.div>
+                                      </>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
                                 <div className="flex items-center gap-5">
                                   <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#F0F0F0] bg-white group-hover:scale-110 transition-transform duration-500 shadow-sm">
                                     <img src={p.mainImageUrl || p.image} className="w-full h-full object-cover" />
@@ -576,15 +759,15 @@ const CommandCenter = ({ onLogout }) => {
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-10 py-4">
+                              <td className="px-6 py-4">
                                 <span className="px-3 py-1.5 rounded-lg bg-[#FAFAFA] text-[#2D5A27] text-[9px] font-black uppercase tracking-widest border border-[#F0F0F0]">
                                   {p.category}
                                 </span>
                               </td>
-                              <td className="px-10 py-4 text-[13px] font-black text-[#1A1A1A]">
+                              <td className="px-6 py-4 text-[13px] font-black text-[#1A1A1A]">
                                 Rp {p.price?.toLocaleString()}
                               </td>
-                              <td className="px-10 py-4">
+                              <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <div className="flex-1 h-1.5 w-16 bg-[#F8F8F8] rounded-full overflow-hidden border border-[#F0F0F0]">
                                     <div 
@@ -597,7 +780,7 @@ const CommandCenter = ({ onLogout }) => {
                                   </span>
                                 </div>
                               </td>
-                              <td className="px-10 py-4">
+                              <td className="px-6 py-4">
                                 <div className="flex gap-8">
                                   <div className="space-y-1">
                                     <p className="text-[8px] font-black text-[#D0D0D0] uppercase tracking-tighter">Registered</p>
@@ -615,27 +798,103 @@ const CommandCenter = ({ onLogout }) => {
                                   )}
                                 </div>
                               </td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex items-center justify-end gap-3">
+                                                                  <div className="relative inline-block">
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setActivePopover(p.id); }}
+                                    title={p.active ? "Deactivate Product" : "Activate Product"}
+                                    className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer hover:scale-105 active:scale-95 ${p.active ? "bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-600 hover:text-white" : "bg-rose-50 text-rose-500 border border-rose-100 hover:bg-rose-500 hover:text-white"}`}
+                                  >
+                                    {p.active ? "Active" : "Archived"}
+                                  </button>
+
+                                  <AnimatePresence>
+                                    {activePopover === p.id && (
+                                      <>
+                                        <div className="fixed inset-0 z-[50]" onClick={(e) => { e.stopPropagation(); setActivePopover(null); }} />
+                                        <motion.div 
+                                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-[200px] bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.15)] border border-[#F0F0F0] p-4 z-[60] text-center"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <p className="text-[9px] font-black uppercase tracking-wider text-[#1A1A1A] mb-3">{p.active ? 'Archive this?' : 'Activate this?'}</p>
+                                          <div className="flex gap-2">
+                                            <button 
+                                              onClick={() => setActivePopover(null)}
+                                              className="flex-1 py-2 rounded-lg bg-[#FAFAFA] text-[#A0A0A0] text-[8px] font-black uppercase tracking-widest hover:bg-[#F2F2F2]"
+                                            >
+                                              No
+                                            </button>
+                                            <button 
+                                              onClick={() => {
+                                                executeToggleStatus(p);
+                                                setActivePopover(null);
+                                              }}
+                                              className={`flex-1 py-2 rounded-lg text-white text-[8px] font-black uppercase tracking-widest ${p.active ? 'bg-rose-500' : 'bg-[#2D5A27]'}`}
+                                            >
+                                              Yes
+                                            </button>
+                                          </div>
+                                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white" />
+                                        </motion.div>
+                                      </>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                                  <button 
+                                    onClick={() => setEditingProduct(p)}
+                                    className="p-3 bg-white border border-[#F0F0F0] text-[#A0A0A0] rounded-xl hover:bg-[#1A1A1A] hover:text-white hover:border-[#1A1A1A] transition-all shadow-sm"
+                                    title="Modify Archetype"
+                                  >
+                                    <Edit2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+
                             </tr>
                           ))}
                         </tbody>
                       </table>
                    </div>
                    {/* FOOTER */}
-                   <div className="px-10 py-6 border-t border-[#F8F8F8] flex items-center justify-between bg-[#FAFAFA]/30 shrink-0">
-                      <p className="text-[10px] text-[#A0A0A0] font-bold uppercase tracking-[0.2em]">
-                        Showing <span className="text-[#1A1A1A]">{filteredProducts.length}</span> of <span className="text-[#1A1A1A]">{products.length}</span> Core Entries
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <button className="w-10 h-10 rounded-xl border border-[#F0F0F0] flex items-center justify-center text-[#CCCCCC] cursor-not-allowed">
-                          <ChevronRight size={18} className="rotate-180" />
-                        </button>
-                        <button className="w-10 h-10 rounded-xl bg-[#1A1A1A] text-white flex items-center justify-center text-[11px] font-black shadow-lg">1</button>
-                        <button className="w-10 h-10 rounded-xl border border-[#F0F0F0] flex items-center justify-center text-[#A0A0A0] hover:bg-white transition-all">2</button>
-                        <button className="w-10 h-10 rounded-xl border border-[#F0F0F0] flex items-center justify-center text-[#A0A0A0] hover:bg-white transition-all">
-                          <ChevronRight size={18} />
-                        </button>
-                      </div>
-                   </div>
+                   <div className="px-6 py-4 border-t border-[#F8F8F8] flex items-center justify-between bg-[#FAFAFA]/30 shrink-0">
+                       <p className="text-[10px] text-[#A0A0A0] font-bold uppercase tracking-[0.2em]">
+                         Showing <span className="text-[#1A1A1A]">{products.length}</span> of <span className="text-[#1A1A1A]">{totalElements}</span> Core Entries
+                       </p>
+                       <div className="flex items-center gap-2">
+                         <button 
+                           onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                           disabled={currentPage === 0}
+                           className={`w-10 h-10 rounded-xl border border-[#F0F0F0] flex items-center justify-center transition-all ${currentPage === 0 ? 'text-[#CCCCCC] cursor-not-allowed' : 'text-[#A0A0A0] hover:bg-white'}`}
+                         >
+                           <ChevronRight size={18} className="rotate-180" />
+                         </button>
+                         
+                         {[...Array(totalPages)].map((_, i) => (
+                           <button 
+                             key={i}
+                             onClick={() => setCurrentPage(i)}
+                             className={`w-10 h-10 rounded-xl flex items-center justify-center text-[11px] font-black transition-all
+                               ${currentPage === i 
+                                 ? 'bg-[#1A1A1A] text-white shadow-lg' 
+                                 : 'border border-[#F0F0F0] text-[#A0A0A0] hover:bg-white'}`}
+                           >
+                             {i + 1}
+                           </button>
+                         ))}
+
+                         <button 
+                           onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                           disabled={currentPage === totalPages - 1}
+                           className={`w-10 h-10 rounded-xl border border-[#F0F0F0] flex items-center justify-center transition-all ${currentPage === totalPages - 1 ? 'text-[#CCCCCC] cursor-not-allowed' : 'text-[#A0A0A0] hover:bg-white'}`}
+                         >
+                           <ChevronRight size={18} />
+                         </button>
+                       </div>
+                    </div>
                 </div>
 
                 {/* SLIDING INSPECTOR DRAWER */}
@@ -656,7 +915,7 @@ const CommandCenter = ({ onLogout }) => {
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         className="fixed top-0 right-0 bottom-0 w-[550px] z-[101] bg-white border-l border-[#F2F2F2] shadow-[-20px_0_60px_rgba(0,0,0,0.05)] flex flex-col"
                       >
-                         <div className="px-12 py-10 border-b border-[#F8F8F8] flex items-center justify-between bg-[#FAFAFA]/50 shrink-0">
+                         <div className="px-8 py-10 border-b border-[#F8F8F8] flex items-center justify-between bg-[#FAFAFA]/50 shrink-0">
                             <div className="flex items-center gap-5">
                                <div className="w-12 h-12 rounded-2xl bg-[#1A1A1A] flex items-center justify-center text-white shadow-lg">
                                   {isAddingNew ? <Plus size={24} /> : <Edit2 size={24} />}
@@ -762,27 +1021,72 @@ const CommandCenter = ({ onLogout }) => {
                             </form>
                          </div>
 
-                         <div className="p-12 border-t border-[#F8F8F8] bg-[#FAFAFA]/50 space-y-4 shrink-0">
-                            <button 
-                               form="inspector-form"
-                               disabled={isSaving} 
-                               type="submit" 
-                               className="w-full py-6 rounded-[2rem] bg-[#1A1A1A] hover:bg-[#2D5A27] text-white text-[11px] font-black uppercase tracking-[0.5em] transition-all shadow-2xl shadow-black/10 flex items-center justify-center gap-4"
-                            >
-                               {isSaving ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
-                               {isSaving ? "Synchronizing Archive..." : "Commit To Registry"}
-                            </button>
-                            {editingProduct && (
-                               <button 
-                                  type="button"
-                                  onClick={(e) => handleDelete(e, editingProduct.id)}
-                                  className="w-full py-5 rounded-[2rem] bg-red-50 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 border border-red-100"
+                          <div className="p-12 border-t border-[#F8F8F8] bg-[#FAFAFA]/50 space-y-4 shrink-0">
+                             {/* SAVE SECTION */}
+                             {!isConfirmingSave ? (
+                                <button 
+                                   form="inspector-form"
+                                   disabled={isSaving || isConfirmingDelete}
+                                   type="button"
+                                   onClick={() => { setIsConfirmingSave(true); setIsConfirmingDelete(false); }}
+                                   className={`w-full py-6 rounded-[2rem] text-white text-[11px] font-black uppercase tracking-[0.5em] transition-all duration-300 flex items-center justify-center gap-4 ${isConfirmingDelete ? 'bg-gray-100 text-gray-300 shadow-none pointer-events-none' : 'bg-[#1A1A1A] hover:bg-[#2D5A27] shadow-black/10'}`}
                                 >
-                                  <Trash2 size={18} />
-                                  Purge Permanent Record
+                                   {isSaving ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+                                   {isSaving ? "Synchronizing..." : "Commit To Registry"}
                                 </button>
-                            )}
-                         </div>
+                             ) : (
+                                <div className="flex gap-2 animate-in fade-in zoom-in duration-200">
+                                   <button 
+                                      type="button"
+                                      onClick={() => setIsConfirmingSave(false)}
+                                      className="flex-1 py-6 bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-[2rem] hover:bg-gray-200 transition-all"
+                                   >
+                                      Batal
+                                   </button>
+                                   <button 
+                                      form="inspector-form"
+                                      type="submit"
+                                      className="flex-[2.5] py-6 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-[2rem] hover:bg-amber-600 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 animate-pulse"
+                                   >
+                                      <CheckCircle2 size={18} />
+                                      Ya, Simpan Perubahan
+                                   </button>
+                                </div>
+                             )}
+
+                             {/* DELETE SECTION */}
+                             {editingProduct && (
+                                !isConfirmingDelete ? (
+                                   <button 
+                                      type="button"
+                                      disabled={isSaving || isConfirmingSave}
+                                      onClick={() => { setIsConfirmingDelete(true); setIsConfirmingSave(false); }}
+                                      className={`w-full py-5 rounded-[2rem] text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-3 border ${isConfirmingSave ? 'bg-gray-50 text-gray-200 border-gray-100 shadow-none pointer-events-none' : 'bg-red-50 text-red-500 border-red-100 hover:bg-red-500 hover:text-white'}`}
+                                   >
+                                      <Trash2 size={18} />
+                                      Move to Archive
+                                   </button>
+                                ) : (
+                                   <div className="flex gap-2 animate-in fade-in zoom-in duration-200">
+                                      <button 
+                                         type="button"
+                                         onClick={() => setIsConfirmingDelete(false)}
+                                         className="flex-1 py-5 bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-[2rem] hover:bg-gray-200 transition-all"
+                                      >
+                                         Batal
+                                      </button>
+                                      <button 
+                                         type="button"
+                                         onClick={(e) => handleDelete(e, editingProduct.id)}
+                                         className="flex-[2.5] py-5 bg-red-700 text-white text-[10px] font-black uppercase tracking-widest rounded-[2rem] hover:bg-red-800 shadow-xl shadow-red-700/40 flex items-center justify-center gap-2 animate-pulse"
+                                      >
+                                         <AlertTriangle size={18} />
+                                         Ya, Arsipkan Produk
+                                      </button>
+                                   </div>
+                                )
+                             )}
+                          </div>
                       </motion.div>
                     </>
                   )}
@@ -824,7 +1128,7 @@ const CommandCenter = ({ onLogout }) => {
                         <tbody className="divide-y divide-[#F8F8F8]">
                            {logs.map((log) => (
                              <tr key={log.id} className="hover:bg-[#FAFAFA]/50 transition-colors group">
-                                <td className="px-10 py-6">
+                                <td className="px-6 py-4">
                                    <div className="flex items-center gap-3">
                                       <div className="w-8 h-8 rounded-lg bg-[#2D5A27]/[0.04] flex items-center justify-center text-[#2D5A27] text-[10px] font-black">
                                          {log.adminUsername?.charAt(0).toUpperCase()}
@@ -832,7 +1136,7 @@ const CommandCenter = ({ onLogout }) => {
                                       <span className="text-[11px] font-bold text-[#1A1A1A]">{log.adminUsername}</span>
                                    </div>
                                 </td>
-                                <td className="px-10 py-6">
+                                <td className="px-6 py-4">
                                    <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter
                                       ${log.action === 'LOGIN' ? 'bg-[#2D5A27]/[0.05] text-[#2D5A27]' : 
                                         log.action === 'LOGIN_FAILED' || log.action === 'DELETE_PRODUCT' ? 'bg-red-50 text-red-500' : 
@@ -840,8 +1144,8 @@ const CommandCenter = ({ onLogout }) => {
                                       {log.action}
                                    </span>
                                 </td>
-                                <td className="px-10 py-6 text-[11px] text-[#A0A0A0] font-medium max-w-[400px] truncate">{log.details}</td>
-                                <td className="px-10 py-6 text-[10px] font-bold text-[#D0D0D0] tabular-nums">
+                                <td className="px-6 py-4 text-[11px] text-[#A0A0A0] font-medium max-w-[400px] truncate">{log.details}</td>
+                                <td className="px-6 py-4 text-[10px] font-bold text-[#D0D0D0] tabular-nums">
                                    {new Date(log.timestamp).toLocaleString('id-ID')}
                                 </td>
                              </tr>
@@ -903,9 +1207,9 @@ const CommandCenter = ({ onLogout }) => {
                     setConfirmConfig(null);
                   }}
                   className={`flex-1 py-4 rounded-xl text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg
-                    ${confirmConfig.type === 'danger' ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-[#2D5A27] hover:bg-[#1A5A27] shadow-[#2D5A27]/20'}`}
+                    ${confirmConfig.confirmColor || (confirmConfig.type === 'danger' ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-[#2D5A27] hover:bg-[#1A5A27] shadow-[#2D5A27]/20')}`}
                 >
-                  Confirm
+                  {confirmConfig.confirmLabel || 'Confirm'}
                 </button>
               </div>
             </motion.div>

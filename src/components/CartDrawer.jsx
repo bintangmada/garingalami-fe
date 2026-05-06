@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Plus, Minus, Send, ShoppingBag, ArrowLeft, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import ConfirmDialog from './ConfirmDialog';
+import GoogleLoginButton from './GoogleLoginButton';
 
 const CartDrawer = ({ isOpen, onClose }) => {
   const { cart, totalItems, totalPrice, removeFromCart, updateQuantity, clearCart, showToast } = useCart();
+  const { user } = useAuth();
   const [userInfo, setUserInfo] = useState({ name: '', address: '' });
   const [confirmItem, setConfirmItem] = useState(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [step, setStep] = useState('cart'); // cart, shipping, payment
+  const [step, setStep] = useState('cart'); // cart, auth, shipping, payment
   const [paymentMethod, setPaymentMethod] = useState('');
   const [localToast, setLocalToast] = useState(null);
+
+  // Sync user info and advance step when logged in
+  useEffect(() => {
+    if (user) {
+      // Auto-advance if we are in auth step
+      if (step === 'auth') {
+        setStep('shipping');
+      }
+      // Fill user name if empty
+      if (!userInfo.name) {
+        setUserInfo(prev => ({ ...prev, name: user.name || user.username }));
+      }
+    }
+  }, [user, step, userInfo.name]);
 
   const triggerLocalToast = (msg) => {
     setLocalToast(msg);
@@ -40,13 +57,24 @@ const CartDrawer = ({ isOpen, onClose }) => {
 
    const handleBack = () => {
      if (step === 'payment') setStep('shipping');
-     else if (step === 'shipping') setStep('cart');
+     else if (step === 'shipping') {
+       // Jika sudah login, langsung lompat balik ke cart (lewati auth)
+       setStep('cart');
+     }
+     else if (step === 'auth') setStep('cart');
+     else if (step === 'cart') setStep('cart');
    };
  
    const handleCheckout = () => {
      if (step === 'cart') {
        if (cart.length === 0) return;
-       setStep('shipping');
+       if (!user) {
+         setStep('auth');
+       } else {
+         setStep('shipping');
+       }
+     } else if (step === 'auth') {
+       if (user) setStep('shipping');
      } else if (step === 'shipping') {
        if (!userInfo.name && !userInfo.address) {
          triggerLocalToast("LENGKAPI NAMA & ALAMAT");
@@ -113,7 +141,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                   </button>
 
                   <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-[#2D5A27] min-w-[80px] text-center">
-                    {step === 'cart' ? 'Cart' : step === 'shipping' ? 'Shipping' : 'Payment'}
+                    {step === 'cart' ? 'Cart' : step === 'auth' ? 'Identity' : step === 'shipping' ? 'Shipping' : 'Payment'}
                   </h2>
 
                   <button 
@@ -264,8 +292,50 @@ const CartDrawer = ({ isOpen, onClose }) => {
                         )}
                       </div>
                     )}
- 
-                   {step === 'shipping' && (
+  
+                    {step === 'auth' && (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center py-20 space-y-12 animate-fade-in">
+                        <div className="space-y-6">
+                           <div className="space-y-2">
+                             <h4 className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#2D5A27]/40">Securing Acquisition</h4>
+                             <h3 className="text-xl font-black uppercase tracking-[0.2em] text-[#2D5A27]">Sync Your Identity</h3>
+                           </div>
+                        </div>
+
+                        <p className="text-[11px] font-medium text-[#2D5A27]/60 leading-relaxed max-w-[280px]">
+                          To provide a seamless experience and secure your collection, please continue with your Google account.
+                        </p>
+
+                        <div className="w-full pt-4">
+                          <GoogleLoginButton onSuccess={() => setStep('shipping')} />
+                        </div>
+
+                        <div className="pt-12 border-t border-[#2D5A27]/5 w-full">
+                           <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#2D5A27]/20 italic">
+                             Automated registration will be performed for new curators.
+                           </p>
+                        </div>
+                      </div>
+                    )}
+  
+                   {(step === 'shipping' || step === 'payment') && (
+              <div className="mb-8 p-4 bg-[#2D5A27]/[0.02] border border-[#2D5A27]/5 rounded-lg">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2D5A27]">Order Summary</span>
+                  <span className="text-[9px] font-bold text-[#2D5A27]/40">{cart.length} Items</span>
+                </div>
+                <div className="space-y-2 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.1em]">
+                      <span className="text-[#2D5A27]/60 truncate mr-4">{item.name} x{item.quantity}</span>
+                      <span className="text-[#2D5A27]">Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {step === 'shipping' && (
                      <div className="pt-4 pb-8 space-y-12 animate-fade-in">
                        <div className="space-y-2">
                           <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#2D5A27]/60">Shipping Detail</h3>
@@ -339,7 +409,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                     onClick={handleCheckout}
                     className="w-full bg-[#2D5A27] text-[#FEFAE0] py-5 rounded-lg text-[10px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-[#344E41] shadow-lg shadow-[#2D5A27]/10"
                   >
-                    {step === 'cart' ? 'Proceed to Shipping' : step === 'shipping' ? 'Proceed to Payment' : 'Complete Acquisition'}
+                    {step === 'cart' ? 'Proceed to Shipping' : step === 'auth' ? 'Waiting for Identity...' : step === 'shipping' ? 'Proceed to Payment' : 'Complete Acquisition'}
                   </button>
                 </div>
              )}
