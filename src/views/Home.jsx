@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import InfoModal from '../components/InfoModal';
+import OrdersHistoryModal from '../components/OrdersHistoryModal';
 import AboutSection from '../components/AboutSection';
 import BossRoom from '../views/BossRoom';
 import axios from 'axios';
@@ -16,6 +17,7 @@ const Home = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [infoModal, setInfoModal] = useState({ isOpen: false, type: '' });
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isBossRoomOpen, setIsBossRoomOpen] = useState(() => {
     return localStorage.getItem('admin_session') === 'active';
   });
@@ -78,6 +80,7 @@ const Home = () => {
         searchTerm={searchTerm}
         onSearch={setSearchTerm}
         onTriggerAdmin={() => setIsBossRoomOpen(true)}
+        onOpenOrders={() => setIsOrdersOpen(true)}
       />
       
       <main className="pt-24 md:pt-32 pb-20 max-w-7xl mx-auto overflow-x-hidden">
@@ -180,8 +183,17 @@ const Home = () => {
         </footer>
       </main>
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <CartDrawer 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        onOpenOrders={() => setIsOrdersOpen(true)}
+      />
       
+      <OrdersHistoryModal 
+        isOpen={isOrdersOpen} 
+        onClose={() => setIsOrdersOpen(false)} 
+      />
+
       <AnimatePresence>
         {infoModal.isOpen && (
           <InfoModal 
