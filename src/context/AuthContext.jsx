@@ -60,12 +60,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginAsDevGuest = async () => {
+    setLoading(true);
+    try {
+      const payload = {
+        email: "testuser@garingalami.com",
+        name: "Test User",
+        picture: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100",
+        googleId: "dev_mock_12345"
+      };
+
+      const response = await fetch('http://localhost:8080/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error("Backend authentication failed");
+
+      const data = await response.json();
+      
+      const userData = {
+        ...data.user,
+        token: data.token
+      };
+
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      console.error("Dev guest login failed", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loginWithGoogle, logout, loading }}>
+    <AuthContext.Provider value={{ user, loginWithGoogle, loginAsDevGuest, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

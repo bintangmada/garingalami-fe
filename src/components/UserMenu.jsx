@@ -4,7 +4,7 @@ import { User, LogOut, Package, Settings, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ComingSoonModal from './ComingSoonModal';
 
-const UserMenu = () => {
+const UserMenu = ({ onOpenOrders }) => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -35,8 +35,8 @@ const UserMenu = () => {
       icon: <Package size={14} />, 
       label: 'My Orders', 
       onClick: () => {
-        setModalTitle('My Orders');
-        setModalOpen(true);
+        setIsOpen(false);
+        if (onOpenOrders) onOpenOrders();
       }
     },
     { 
