@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
@@ -12,6 +12,7 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
+  const prevUserRef = useRef(null);
 
   const getHeaders = useCallback(() => {
     const headers = { 'Content-Type': 'application/json' };
@@ -21,10 +22,24 @@ export const CartProvider = ({ children }) => {
     return headers;
   }, [user]);
 
-  // Fetch cart from backend when user changes
+  // Merge local guest cart items into the backend after login
+  const mergeGuestCartToBackend = useCallback(async (localCart, headers) => {
+    for (const item of localCart) {
+      try {
+        await fetch(API_BASE, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ productId: item.id, quantity: item.quantity })
+        });
+      } catch (err) {
+        console.error("Failed to merge cart item", item.id, err);
+      }
+    }
+  }, []);
+
+  // Fetch cart from backend
   const fetchCart = useCallback(async () => {
     if (!user?.token) {
-      setCart([]);
       return;
     }
     try {
@@ -33,20 +48,38 @@ export const CartProvider = ({ children }) => {
       if (response.ok) {
         const data = await response.json();
         setCart(data);
-      } else {
-        setCart([]);
       }
     } catch (err) {
       console.error("Failed to fetch cart", err);
-      setCart([]);
     } finally {
       setLoading(false);
     }
   }, [user, getHeaders]);
 
+  // Handle user changes (login/logout)
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    const prevUser = prevUserRef.current;
+    prevUserRef.current = user;
+
+    if (!prevUser && user?.token) {
+      // Just logged in — merge any local guest cart items, then fetch
+      const localCart = [...cart];
+      if (localCart.length > 0) {
+        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${user.token}` };
+        mergeGuestCartToBackend(localCart, headers).then(() => {
+          fetchCart();
+        });
+      } else {
+        fetchCart();
+      }
+    } else if (prevUser && !user) {
+      // Just logged out — clear cart
+      setCart([]);
+    } else if (user?.token) {
+      // User already logged in (initial mount or token refresh)
+      fetchCart();
+    }
+  }, [user]); // intentionally minimal deps
 
   const showToast = (message) => {
     setToast(message);
@@ -54,18 +87,6 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = async (product) => {
-    if (!user?.token) {
-      // Fallback: local-only for guests
-      setCart(prev => {
-        const existing = prev.find(item => item.id === product.id);
-        if (existing) {
-          return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-        }
-        return [...prev, { ...product, quantity: 1 }];
-      });
-      return;
-    }
-
     // Optimistic update
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
@@ -75,6 +96,8 @@ export const CartProvider = ({ children }) => {
       return [...prev, { ...product, quantity: 1 }];
     });
 
+    if (!user?.token) return; // guest mode: local only
+
     try {
       await fetch(API_BASE, {
         method: 'POST',
@@ -83,12 +106,11 @@ export const CartProvider = ({ children }) => {
       });
     } catch (err) {
       console.error("Failed to add to cart", err);
-      fetchCart(); // rollback on error
+      fetchCart();
     }
   };
 
   const removeFromCart = async (id) => {
-    // Optimistic update
     setCart(prev => prev.filter(item => item.id !== id));
 
     if (!user?.token) return;
@@ -105,7 +127,6 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (id, delta) => {
-    // Optimistic update
     setCart(prev => prev.map(item => {
       if (item.id === id) {
         const newQty = Math.max(1, item.quantity + delta);

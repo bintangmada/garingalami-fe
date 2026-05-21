@@ -6,8 +6,10 @@ import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import InfoModal from '../components/InfoModal';
 import OrdersHistoryModal from '../components/OrdersHistoryModal';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 import AboutSection from '../components/AboutSection';
 import BossRoom from '../views/BossRoom';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 const Home = () => {
@@ -18,6 +20,8 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [infoModal, setInfoModal] = useState({ isOpen: false, type: '' });
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const { loginAsDevGuest } = useAuth();
   const [isBossRoomOpen, setIsBossRoomOpen] = useState(() => {
     return localStorage.getItem('admin_session') === 'active';
   });
@@ -81,6 +85,7 @@ const Home = () => {
         onSearch={setSearchTerm}
         onTriggerAdmin={() => setIsBossRoomOpen(true)}
         onOpenOrders={() => setIsOrdersOpen(true)}
+        onLogin={() => setIsLoginOpen(true)}
       />
       
       <main className="pt-24 md:pt-32 pb-20 max-w-7xl mx-auto overflow-x-hidden">
@@ -215,6 +220,63 @@ const Home = () => {
               onProductChange={fetchProducts}
             />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Login Modal */}
+      <AnimatePresence>
+        {isLoginOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsLoginOpen(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-[4px]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="relative bg-white w-full max-w-[340px] p-10 rounded-2xl shadow-2xl text-center space-y-8"
+            >
+              <button 
+                onClick={() => setIsLoginOpen(false)}
+                className="absolute top-4 right-4 text-[#2D5A27]/20 hover:text-[#2D5A27] transition-colors"
+              >
+                <X size={18} />
+              </button>
+              <div className="space-y-2">
+                <h4 className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#2D5A27]/40">Welcome to Garing Alami</h4>
+                <h3 className="text-lg font-black uppercase tracking-[0.1em] text-[#2D5A27]">Sign In</h3>
+              </div>
+              <p className="text-[11px] font-medium text-[#2D5A27]/60 leading-relaxed">
+                Sign in to sync your collection across devices and track your orders.
+              </p>
+              <div className="flex flex-col items-center gap-4 w-full">
+                <GoogleLoginButton onSuccess={() => setIsLoginOpen(false)} />
+                <div className="flex items-center gap-2 w-full max-w-[200px] my-1">
+                  <div className="h-[1px] bg-[#2D5A27]/10 flex-1"></div>
+                  <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#2D5A27]/20">OR</span>
+                  <div className="h-[1px] bg-[#2D5A27]/10 flex-1"></div>
+                </div>
+                <button 
+                  onClick={async () => {
+                    try {
+                      await loginAsDevGuest();
+                      setIsLoginOpen(false);
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
+                  className="w-full py-3 bg-[#2D5A27]/5 border border-[#2D5A27]/10 rounded-full text-[9px] font-black uppercase tracking-[0.2em] text-[#2D5A27] transition-all hover:bg-[#2D5A27]/10 active:scale-95"
+                >
+                  Simulasi Login (Guest)
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

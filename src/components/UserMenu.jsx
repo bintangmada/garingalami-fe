@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, LogOut, Package, Settings, ChevronDown } from 'lucide-react';
+import { User, LogOut, Package, Settings, ChevronDown, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ComingSoonModal from './ComingSoonModal';
 
-const UserMenu = ({ onOpenOrders }) => {
+const UserMenu = ({ onOpenOrders, onLogin }) => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -24,8 +24,23 @@ const UserMenu = ({ onOpenOrders }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Kembalikan null HANYA setelah semua Hook (useState/useEffect) dipanggil
-  if (!user) return null;
+  // Show login button when not logged in
+  if (!user) {
+    return (
+      <button 
+        onClick={onLogin}
+        className="flex items-center gap-2 group focus:outline-none"
+      >
+        <div className="w-px h-4 bg-[#2D5A27]/10" />
+        <div className="w-8 h-8 rounded-full bg-[#2D5A27]/5 border border-[#2D5A27]/10 flex items-center justify-center group-hover:bg-[#2D5A27]/10 group-hover:border-[#2D5A27]/20 transition-all">
+          <LogIn size={14} className="text-[#2D5A27]/40 group-hover:text-[#2D5A27] transition-colors" />
+        </div>
+        <span className="hidden md:block text-[10px] font-black uppercase tracking-[0.2em] text-[#2D5A27]/40 group-hover:text-[#2D5A27] transition-colors">
+          Login
+        </span>
+      </button>
+    );
+  }
 
   const userInitial = (user.name || user.username || 'U').charAt(0).toUpperCase();
   const profileImg = user.picture || user.profilePicture;

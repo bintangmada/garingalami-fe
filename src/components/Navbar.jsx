@@ -4,7 +4,7 @@ import { ShoppingBag, Leaf, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import UserMenu from './UserMenu';
 
-const Navbar = ({ onOpenCart, searchTerm, onSearch, onTriggerAdmin, onOpenOrders }) => {
+const Navbar = ({ onOpenCart, searchTerm, onSearch, onTriggerAdmin, onOpenOrders, onLogin }) => {
   const { totalItems } = useCart();
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [clickCount, setClickCount] = React.useState(0);
@@ -97,7 +97,7 @@ const Navbar = ({ onOpenCart, searchTerm, onSearch, onTriggerAdmin, onOpenOrders
             </button>
           </div>
 
-          <UserMenu onOpenOrders={onOpenOrders} />
+          <UserMenu onOpenOrders={onOpenOrders} onLogin={onLogin} />
         </div>
       </div>
     </nav>
